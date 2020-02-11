@@ -2,6 +2,7 @@ SHELL := /bin/bash
 
 MODULENAME := lf_kernel
 SAMPLEAPP := lf_sample_app
+SAMPLEMODEL := lf_sample_model
 
 module:
 		-@mkdir build
@@ -20,6 +21,12 @@ sample_app_install:
 
 sample_app_remove:
 		sudo rmmod $(SAMPLEAPP)
+
+sample_model_install:
+		@cd build/datapath; sudo insmod $(SAMPLEMODEL).ko
+
+sample_model_remove:
+		sudo rmmod $(SAMPLEMODEL)
 
 clean:
 		-@rm -rf build

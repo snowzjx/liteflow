@@ -9,7 +9,7 @@
 #define MAX_APP 32
 #define APP_ID_UNUSE 0
 
-static DEFINE_RWLOCK(app_lock);
+static DEFINE_RWLOCK(lf_lock);
 
 struct __app {
     u8 appid;
@@ -23,31 +23,34 @@ struct __app {
 
 static struct __app apps[MAX_APP + 1];
 
-
 int lf_register_app(struct app* app)
 {
     u8 appid;
 
     appid = app->appid;
     if (appid > MAX_APP) {
-        printk(KERN_ERR "unsupported appid: %u\n", appid);
+        printk(KERN_ERR "Unsupported appid: %u.\n", appid);
         return LF_ERROR;
     }
 
+    write_lock(&lf_lock);
     if (apps[appid].appid != APP_ID_UNUSE) {
-        printk(KERN_ERR "cannot re-register app with appid: %u\n", appid);
-        return LF_ERROR;
+        printk(KERN_ERR "Cannot re-register app with appid: %u.\n", appid);
+        goto error;
     }
 
-    write_lock(&app_lock);
-    printk(KERN_INFO "registering app with appid: %u\n", app->appid);
+    printk(KERN_INFO "Registering app with appid: %u...\n", app->appid);
     apps[appid].appid = appid;
     apps[appid].input_size = app->input_size;
     apps[appid].output_size = app->output_size;
     apps[appid].active_model = NULL;
     apps[appid].backup_model = NULL;
-    write_unlock(&app_lock);
+    write_unlock(&lf_lock);
     return LF_SUCCS;
+
+error:
+    write_unlock(&lf_lock);
+    return LF_ERROR;
 }
 EXPORT_SYMBOL(lf_register_app);
 
@@ -56,17 +59,18 @@ int lf_unregister_app(u8 appid)
     struct model_container *model_to_delete;
 
     if (appid > MAX_APP) {
-        printk(KERN_ERR "unsupported appid: %u\n", appid);
+        printk(KERN_ERR "Unsupported appid: %u.\n", appid);
         return LF_ERROR;
     }
+
+    write_lock(&lf_lock);
 
     if (apps[appid].appid == APP_ID_UNUSE) {
-        printk(KERN_ERR "cannot deregister app with unknown appid: %u\n", appid);
-        return LF_ERROR;
+        printk(KERN_ERR "Cannot deregister app with unknown appid: %u.\n", appid);
+        goto error;
     }
 
-    write_lock(&app_lock);
-    printk(KERN_INFO "unregistering app with appid: %u\n", appid);
+    printk(KERN_INFO "Unregistering app with appid: %u...\n", appid);
     model_to_delete = apps[appid].active_model;
     if (model_to_delete!= NULL) {
         destroy_model(model_to_delete);
@@ -78,7 +82,11 @@ int lf_unregister_app(u8 appid)
     }
     apps[appid].appid = APP_ID_UNUSE;
 
-    write_unlock(&app_lock);
+    write_unlock(&lf_lock);
+    return LF_SUCCS;
+
+error:
+    write_unlock(&lf_lock);
     return LF_ERROR;
 }
 EXPORT_SYMBOL(lf_unregister_app);
@@ -86,23 +94,130 @@ EXPORT_SYMBOL(lf_unregister_app);
 int 
 lf_register_model(u8 appid, struct model_container *model)
 {
-    u32 ret;
-
-    ret = init_model(model);
-    if (ret == LF_ERROR) {
+    u8 ret;
+    if (appid > MAX_APP) {
+        printk(KERN_ERR "Unsupported appid: %u.\n", appid);
         return LF_ERROR;
     }
 
+    write_lock(&lf_lock);
+
+    if (apps[appid].appid == APP_ID_UNUSE) {
+        printk(KERN_ERR "Need to register app before registering model.\n");
+        goto error;
+    }
+
+    if (apps[appid].input_size != model->input_size) {
+        printk(KERN_ERR "Input size of app and model are not consistent.\n");
+        goto error;
+    }
+
+    if (apps[appid].output_size != model->output_size) {
+        printk(KERN_ERR "Output size of app and model are not consistent.\n");
+        goto error;
+    }
+
+    printk(KERN_INFO "Registering model witu uuid: %u to app with appid: %u...\n", model->uuid, appid);
+    ret = init_model(model);
+    if (ret == LF_ERROR) {
+        goto error;
+    }
+    apps[appid].backup_model = model;
+    write_unlock(&lf_lock);
     return LF_SUCCS;
+
+error:
+    write_unlock(&lf_lock);
+    return LF_ERROR;
 }
 EXPORT_SYMBOL(lf_register_model);
 
 int 
-lf_unregister_model(u8 appid, struct model_container *model)
+lf_unregister_model(u8 appid, u32 model_uuid)
 {
+    struct model_container *model;
+
+    if (appid > MAX_APP) {
+        printk(KERN_ERR "Unsupported appid: %u.\n", appid);
+        return LF_ERROR;
+    }
+        
+    write_lock(&lf_lock);
+    if (apps[appid].appid == APP_ID_UNUSE) {
+        printk(KERN_ERR "Need to register app before unregistering model.\n");
+        goto error;
+    }
+
+    model = apps[appid].active_model;
+    if (model != NULL && model->uuid == model_uuid) {
+        printk(KERN_ERR "Cannot unregister active model.\n");
+        goto error;
+    }
+
+    model = apps[appid].backup_model;
+    if (model == NULL || model->uuid != model_uuid) {
+        printk(KERN_ERR "No model with uuid: %u to unregister.\n", model_uuid);
+        goto error;
+    }
+    printk(KERN_INFO "Unregister model with uuid: %u with app with appid: %u...\n", model_uuid, appid);
+
+    destroy_model(model);
+    apps[appid].backup_model = NULL;
+    write_unlock(&lf_lock);
+
     return LF_SUCCS;
+
+error:
+    write_unlock(&lf_lock);
+    return LF_ERROR;
 }
 EXPORT_SYMBOL(lf_unregister_model);
+
+int 
+lf_activate_model(u8 appid, u32 model_uuid) 
+{
+    struct model_container *model, *swap_model;
+
+    if (appid > MAX_APP) {
+        printk(KERN_ERR "Unsupported appid: %u.\n", appid);
+        return LF_ERROR;
+    }
+        
+    write_lock(&lf_lock);
+    if (apps[appid].appid == APP_ID_UNUSE) {
+        printk(KERN_ERR "Need to register app before unregistering model.\n");
+        goto error;
+    }
+
+    model = apps[appid].backup_model;
+    if (model != NULL && model->uuid != model_uuid) {
+        printk(KERN_ERR "First register the model with uuid: %u, then activate it.\n", model_uuid);
+        goto error;
+    }
+    
+    printk(KERN_INFO "Activate model with uuid: %u.\n", model_uuid);
+    swap_model = apps[appid].active_model;
+    apps[appid].active_model = model;
+    apps[appid].backup_model = swap_model;
+
+    // TODO swap some meta info, such as average reward of previous active model. which can be 
+    // used as evidence to roll back model
+    
+    write_unlock(&lf_lock);
+    return LF_SUCCS;
+
+error:
+    write_unlock(&lf_lock);
+    return LF_ERROR;
+}
+EXPORT_SYMBOL(lf_activate_model);
+
+
+int 
+lf_query_model(u8 appid, struct model_container * model, s64 *input, s64 *output) {
+    return LF_SUCCS;
+}
+
 
 static int
 __init liteflow_module_init(void)
