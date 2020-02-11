@@ -1,4 +1,5 @@
 #include <linux/slab.h>
+#include "linux/liteflow.h"
 
 #include "model_container.h"
 
@@ -74,9 +75,14 @@ int init_model(struct model_container *model)
     return LF_SUCCS;
 }
 
-int destroy_model(struct model_container * model)
+void destroy_model(struct model_container * model)
 {
-    return LF_SUCCS;
+    struct model_layer *layer;
+
+    list_for_each_entry(layer, &model->layers, list) {
+        kfree(layer->input);
+        kfree(layer->output);
+    }
 }
 
 int query_model(struct model_container * model, s64 *input, s64 *output)

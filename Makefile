@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
-MODULENAME := liteflow
-SAMPLENAME := lf_sample
+MODULENAME := lf_kernel
+SAMPLEAPP := lf_sample_app
 
 module:
 		-@mkdir build
@@ -10,18 +10,16 @@ module:
 		@cd build/datapath; make all;
 
 module_install:
-		make module;
 		@cd build/datapath; sudo insmod $(MODULENAME).ko
 
 module_remove:
 		sudo rmmod $(MODULENAME)
 
-sample_install:
-		make module;
-		@cd build/datapath; sudo insmod $(SAMPLENAME).ko
+sample_app_install:
+		@cd build/datapath; sudo insmod $(SAMPLEAPP).ko
 
-sample_remove:
-		sudo rmmod $(SAMPLENAME)
+sample_app_remove:
+		sudo rmmod $(SAMPLEAPP)
 
 clean:
 		-@rm -rf build
