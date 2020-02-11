@@ -9,12 +9,19 @@
 
 #define APP_ID 1
 #define MODEL_UUID 2333
+#define MODEL_UUID2 6666
 
 static void layer1_comp (s64 *input, s64 *output);
 static void layer2_comp (s64 *input, s64 *output);
 
 struct model_container sample_model __read_mostly = {
     .uuid = MODEL_UUID,
+    .input_size = 8,
+    .output_size = 6,
+};
+
+struct model_container sample_model2 __read_mostly = {
+    .uuid = MODEL_UUID2,
     .input_size = 8,
     .output_size = 6,
 };
@@ -38,6 +45,8 @@ static void construct_model(void)
     INIT_LIST_HEAD(&sample_model.layers);
     list_add(&layer1.list, &sample_model.layers);
     list_add(&layer2.list, &layer1.list);
+
+    INIT_LIST_HEAD(&sample_model2.layers);
 }
 
 // sample code, and the code should be generated based on cadidate models from userspace
@@ -79,11 +88,13 @@ __init liteflow_sample_model_init(void)
 
     construct_model();
     lf_register_model(APP_ID, &sample_model);
-    lf_unregister_model(APP_ID, MODEL_UUID);
+    lf_register_model(APP_ID, &sample_model2); // Fail to register 
+    lf_query_model(APP_ID, NULL, NULL); // No active model
 
-    lf_register_model(APP_ID, &sample_model);
-    lf_activate_model(APP_ID, MODEL_UUID);
-    lf_unregister_model(APP_ID, MODEL_UUID);
+    lf_activate_model(APP_ID, MODEL_UUID); // 2333 active
+    lf_query_model(APP_ID, NULL, NULL); // 2333 to infer
+    lf_activate_model(APP_ID, MODEL_UUID2); // 6666 is active
+    lf_query_model(APP_ID, NULL, NULL); // Use 666 to infer
 
     return 0;
 }

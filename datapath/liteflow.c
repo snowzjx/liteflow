@@ -124,6 +124,8 @@ lf_register_model(u8 appid, struct model_container *model)
     }
     apps[appid].backup_model = model;
     write_unlock(&lf_lock);
+        
+    printk(KERN_INFO "Model witu uuid: %u is registered to app with appid: %u!\n", model->uuid, appid);
     return LF_SUCCS;
 
 error:
@@ -190,7 +192,11 @@ lf_activate_model(u8 appid, u32 model_uuid)
     }
 
     model = apps[appid].backup_model;
-    if (model != NULL && model->uuid != model_uuid) {
+
+    if (model == NULL) {
+        printk(KERN_ERR "No backup model to activate.\n");
+        goto error;
+    } else if (model->uuid != model_uuid) {
         printk(KERN_ERR "First register the model with uuid: %u, then activate it.\n", model_uuid);
         goto error;
     }
@@ -214,10 +220,35 @@ EXPORT_SYMBOL(lf_activate_model);
 
 
 int 
-lf_query_model(u8 appid, struct model_container * model, s64 *input, s64 *output) {
-    return LF_SUCCS;
-}
+lf_query_model(u8 appid, s64 *input, s64 *output) {
 
+    struct model_container *model_to_use;
+
+    if (appid > MAX_APP) {
+        printk(KERN_ERR "Unsupported appid: %u.\n", appid);
+        return LF_ERROR;
+    }
+
+    read_lock(&lf_lock);
+    if (apps[appid].appid == APP_ID_UNUSE) {
+        printk(KERN_ERR "Need to register app before inference the model.\n");
+        write_unlock(&lf_lock);
+        return LF_ERROR;
+    }
+    
+    model_to_use = apps[appid].active_model;
+    read_unlock(&lf_lock);
+
+    if (model_to_use == NULL) {
+        printk(KERN_ERR "No active model for app with appid: %u.\n", appid);
+        return LF_ERROR;
+    }
+
+    printk(KERN_INFO "Using model with uuid: %u for inference...\n", model_to_use->uuid);
+
+    return query_model(model_to_use, input, output);
+}
+EXPORT_SYMBOL(lf_query_model);
 
 static int
 __init liteflow_module_init(void)
@@ -228,6 +259,8 @@ __init liteflow_module_init(void)
 
     for (appid = 1; appid <= MAX_APP; ++appid) {
         apps[appid].appid = APP_ID_UNUSE;
+        apps[appid].active_model = NULL;
+        apps[appid].backup_model = NULL;
     }
 
     return 0;
