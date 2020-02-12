@@ -49,10 +49,7 @@ int init_data_storage(struct model_container *model)
     list_for_each_entry(layer, &model->layers, list) {
         layer_input_size = layer->input_size;
         layer_output_size = layer->output_size;
-        layer->input = kmalloc(sizeof(s64) * layer_input_size, GFP_KERNEL);
-        if (layer->input == NULL) {
-            return LF_ERROR;
-        }
+
         layer->output = kmalloc(sizeof(s64) * layer_output_size, GFP_KERNEL);
         if (layer->output == NULL) {
             return LF_ERROR;
@@ -87,6 +84,18 @@ void destroy_model(struct model_container * model)
 
 int query_model(struct model_container * model, s64 *input, s64 *output)
 {
+    struct model_layer *layer, *last_layer;
+    s64 *intermediate;
+
+    intermediate = input;
+    list_for_each_entry(layer, &model->layers, list) {
+        layer->comp_func(intermediate, layer->output);
+        intermediate = layer->output;
+    }
+
+    last_layer = list_last_entry(&model->layers, struct model_layer, list);
+    memcpy(output, last_layer->output, last_layer->output_size * sizeof(s64));
+
     return LF_SUCCS;
 }
 

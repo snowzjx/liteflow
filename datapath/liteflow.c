@@ -224,6 +224,12 @@ lf_query_model(u8 appid, s64 *input, s64 *output) {
 
     struct model_container *model_to_use;
 
+    if (input == NULL || output == NULL) {
+        printk(KERN_ERR "Input or output vector cannot be null.\n");
+        return LF_ERROR;
+    }
+
+
     if (appid > MAX_APP) {
         printk(KERN_ERR "Unsupported appid: %u.\n", appid);
         return LF_ERROR;
