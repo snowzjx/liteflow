@@ -21,6 +21,7 @@ tcp_kernel_install:
 		sudo sysctl net.ipv4.tcp_congestion_control=lf_tcp_kernel
 
 tcp_kernel_remove:
+		sudo sysctl net.ipv4.tcp_congestion_control=cubic
 		sudo rmmod $(LF_TCP_KERNERL)
 
 sample_model_install:
