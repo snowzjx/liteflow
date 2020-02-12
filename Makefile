@@ -1,7 +1,7 @@
 SHELL := /bin/bash
 
-MODULENAME := lf_kernel
-SAMPLEAPP := lf_sample_app
+LF_KERNEL := lf_kernel
+LF_TCP_KERNERL := lf_tcp_kernel
 SAMPLEMODEL := lf_sample_model
 
 module:
@@ -11,16 +11,17 @@ module:
 		@cd build/datapath; make all;
 
 module_install:
-		@cd build/datapath; sudo insmod $(MODULENAME).ko
+		@cd build/datapath; sudo insmod $(LF_KERNEL).ko
 
 module_remove:
-		sudo rmmod $(MODULENAME)
+		sudo rmmod $(LF_KERNEL)
 
-sample_app_install:
-		@cd build/datapath; sudo insmod $(SAMPLEAPP).ko
+tcp_kernel_install:
+		@cd build/datapath; sudo insmod $(LF_TCP_KERNERL).ko
+		sudo sysctl net.ipv4.tcp_congestion_control=lf_tcp_kernel
 
-sample_app_remove:
-		sudo rmmod $(SAMPLEAPP)
+tcp_kernel_remove:
+		sudo rmmod $(LF_TCP_KERNERL)
 
 sample_model_install:
 		@cd build/datapath; sudo insmod $(SAMPLEMODEL).ko

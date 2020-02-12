@@ -105,4 +105,4 @@ module_exit(liteflow_sample_model_exit);
 
 MODULE_DESCRIPTION("liteflow sample model");
 MODULE_AUTHOR("Junxue ZHANG");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL v2");

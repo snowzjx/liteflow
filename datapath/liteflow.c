@@ -283,4 +283,4 @@ module_exit(liteflow_module_exit);
 
 MODULE_DESCRIPTION("liteflow");
 MODULE_AUTHOR("Junxue ZHANG");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL v2");
