@@ -14,22 +14,36 @@
 
 // NUM_OF_INPUT_METRICS metrics will be passed to NN
 // such as acked bytes, ecn bytes and so on
-#define INPUT_METRICS_POS_SRC_IP 0
-#define INPUT_METRICS_POS_DEST_IP 1
-#define INPUT_METRICS_POS_SRC_PORT 2
-#define INPUT_METRICS_POS_DEST_PORT 3
-#define INPUT_METRICS_POS_BYTES_ACKED 4
-#define INPUT_METRICS_POS_ECN_BYTES 5
+#define INPUT_METRICS_POS_BYTES_ACKED 0
+#define INPUT_METRICS_POS_ECN_BYTES 1
 // More can be added
-#define NUM_OF_INPUT_METRICS 6
+#define NUM_OF_INPUT_METRICS 2
+
+#define HISTORY_LEN 3
 
 #define OUTPUT_RATE 0
 #define NUM_OF_OUTPUT_VALUE 1
 
-struct lf_tcp_internal {
-    u32 last_snd_una;
-    s64 metrics[NUM_OF_INPUT_METRICS]; // store collected metrics
+struct lf_tcp_metric {
+    s64 values[NUM_OF_INPUT_METRICS]; // store collected metrics
 };
+
+struct lf_tcp_internal {
+    u64 src_ip;
+    u64 dest_ip;
+    u64 src_port;
+    u64 dest_port;
+    u64 last_snd_una;
+    u32 current_pointer;
+    struct lf_tcp_metric* metrics; // ring buffer
+};
+
+static inline void lf_increase_pointer(struct lf_tcp_internal *lf_tcp) {
+    u32 current_pointer;
+
+    current_pointer = lf_tcp->current_pointer;
+    lf_tcp->current_pointer = (++current_pointer) % HISTORY_LEN;
+}
 
 // Set rate towards connection
 static inline void lf_set_rate (struct sock *sk, u32 rate) {
@@ -44,11 +58,15 @@ static void lf_tcp_conn_init(struct sock *sk) {
     ca = inet_csk_ca(sk);
     tp = tcp_sk(sk);
 
+    ca->src_ip = tp->inet_conn.icsk_inet.inet_saddr;
+    ca->src_port = tp->inet_conn.icsk_inet.inet_sport;
+    ca->dest_ip = tp->inet_conn.icsk_inet.inet_daddr;
+    ca->dest_port = tp->inet_conn.icsk_inet.inet_dport;
     ca->last_snd_una = tp->snd_una;
-    ca->metrics[INPUT_METRICS_POS_SRC_IP] = tp->inet_conn.icsk_inet.inet_saddr;
-    ca->metrics[INPUT_METRICS_POS_SRC_PORT] = tp->inet_conn.icsk_inet.inet_sport;
-    ca->metrics[INPUT_METRICS_POS_DEST_IP] = tp->inet_conn.icsk_inet.inet_daddr;
-    ca->metrics[INPUT_METRICS_POS_DEST_PORT] = tp->inet_conn.icsk_inet.inet_dport;
+
+    ca->current_pointer = 0;
+    ca->metrics = kmalloc(sizeof(struct lf_tcp_metric) * HISTORY_LEN, GFP_KERNEL);
+    memset(ca->metrics, 0, sizeof(struct lf_tcp_metric) * HISTORY_LEN);
 
     if (!(tp->ecn_flags & TCP_ECN_OK)) {
         INET_ECN_dontxmit(sk);
@@ -81,14 +99,28 @@ static u32 lf_tcp_conn_undo_cwnd(struct sock *sk)
 // and set sending rate based on returned rate
 static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs) 
 {
-    int ret;
+    int ret, metric_pos, value_pos, pos = 0;
     u32 output_rate;
     struct lf_tcp_internal *ca;
-    
+    s64 nn_input[NUM_OF_INPUT_METRICS * HISTORY_LEN];
     s64 nn_output[NUM_OF_OUTPUT_VALUE];
+    
     ca = inet_csk_ca(sk);
+    if(ca->metrics == NULL) {
+        printk(KERN_ERR "Current flow is not managed by liteflow tcp kernel!\n");
+        return;
+    }
+    
+    // Prepare input vector
+    // Performance is not good
+    for (metric_pos = 0; metric_pos < HISTORY_LEN; ++metric_pos) {
+        for (value_pos = 0; value_pos < NUM_OF_INPUT_METRICS; ++value_pos) {
+            nn_input[pos] = ca->metrics[(ca->current_pointer + metric_pos) % HISTORY_LEN].values[value_pos];
+            pos++;
+        }
+    }
 
-    ret = lf_query_model(LF_TCP_APP_ID, ca->metrics, nn_output);
+    ret = lf_query_model(LF_TCP_APP_ID, nn_input, nn_output);
     if (ret == LF_ERROR) {
         printk(KERN_ERR "Query NN model failed!\n");
     } else {
@@ -107,13 +139,22 @@ static void lf_tcp_conn_in_ack_event(struct sock *sk, u32 flags)
     
     tp = tcp_sk(sk);
     ca = inet_csk_ca(sk);
-    acked_bytes = tp->snd_una - ca->last_snd_una;
-    ca->metrics[INPUT_METRICS_POS_BYTES_ACKED] = acked_bytes;
-    if (flags & CA_ACK_ECE) {
-        ca->metrics[INPUT_METRICS_POS_ECN_BYTES] = acked_bytes;
-    } else {
-        ca->metrics[INPUT_METRICS_POS_ECN_BYTES] = 0;
+
+    if(ca->metrics == NULL) {
+        printk(KERN_ERR "Current flow is not managed by liteflow tcp kernel!\n");
+        return;
     }
+
+    acked_bytes = tp->snd_una - ca->last_snd_una;
+    ca->last_snd_una = tp->snd_una;
+
+    ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_BYTES_ACKED] = acked_bytes;
+    if (flags & CA_ACK_ECE) {
+        ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_BYTES] = acked_bytes;
+    } else {
+        ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_BYTES] = 0;
+    }
+    lf_increase_pointer(ca);
 }
 
 
