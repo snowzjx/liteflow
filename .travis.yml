@@ -1,0 +1,9 @@
+dist: bionic
+addons:
+  apt:
+    update: true
+    packages:
+    - cmake
+    - time
+script:
+  - make
