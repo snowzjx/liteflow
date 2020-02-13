@@ -3,7 +3,7 @@ addons:
   apt:
     update: true
     packages:
-    - cmake
-    - time
+    - build-essential
+    - linux-headers-$(uname -r)
 script:
-  - make
+  - make module
