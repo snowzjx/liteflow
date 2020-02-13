@@ -38,22 +38,6 @@
 #define NUM_OF_OUTPUT_VALUE 1
 
 struct lf_tcp_metric {
-    // // newly acked, in-order bytes
-    // u32 bytes_acked;
-    // // newly acked, in-order packets
-    // u32 packets_acked;
-    // // bytes corresponding to ecn-marked packets
-    // u32 ecn_bytes;
-    // // ecn-marked packets
-    // u32 ecn_packets;
-    // // a recent sample of the round-trip time
-    // s64 rtt_sample_us;
-    // // newly sended packets
-    // s32 delivered;
-    // // time for delivered
-    // s64 interval_us;
-    // // sample of the sending rate, bytes / s
-    // u32 rate_outgoing;
     s64 values[NUM_OF_INPUT_METRICS];
 };
 
@@ -91,27 +75,24 @@ static int rate_sample_valid(const struct rate_sample *rs) {
     return ret;
 }
 
-static int load_metric(struct sock *sk, const struct rate_sample *rs) {
-    struct tcp_sock *tp;
-    struct lf_tcp_internal *ca;
-    struct lf_tcp_metric metric;
+static inline int load_metric(struct lf_tcp_internal *ca, struct tcp_sock *tp, const struct rate_sample *rs) {
+    
+    struct lf_tcp_metric* metric;
     
     int measured_valid_rate = rate_sample_valid(rs);
     if (measured_valid_rate != 0) {
         return -1;
     }
     
-    tp = tcp_sk(sk);
-    ca = inet_csk_ca(sk);
-    metric = ca->metrics[ca->current_pointer];
+    metric = &(ca->metrics[ca->current_pointer]);
 
     // kernel version == 4.15.0
     // compatible to most of versions
-    metric.values[INPUT_METRICS_POS_RTT_SAMPLE_US] = rs->rtt_us;
-    metric.values[INPUT_METRICS_POS_DELIVERED] = rs->delivered;
-    metric.values[INPUT_METRICS_POS_INTERVAL_US] = rs->interval_us;
-    metric.values[INPUT_METRICS_POS_RATE_OUTGOING] = (s64) rs->delivered * tp->mss_cache * S_TO_US;
-    do_div(metric.values[INPUT_METRICS_POS_RATE_OUTGOING], rs->interval_us);
+    metric->values[INPUT_METRICS_POS_RTT_SAMPLE_US] = rs->rtt_us;
+    metric->values[INPUT_METRICS_POS_DELIVERED] = rs->delivered;
+    metric->values[INPUT_METRICS_POS_INTERVAL_US] = rs->interval_us;
+    metric->values[INPUT_METRICS_POS_RATE_OUTGOING] = (s64) rs->delivered * tp->mss_cache * S_TO_US;
+    do_div(metric->values[INPUT_METRICS_POS_RATE_OUTGOING], rs->interval_us);
     
     if (ca->global_stats[GLOBAL_STATS_POS_MIN_RTT_US] == -1 
         || ca->global_stats[GLOBAL_STATS_POS_MIN_RTT_US] > rs->rtt_us) 
@@ -182,7 +163,8 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
     int ret, global_stats_pos, metric_pos, value_pos, pos = 0;
     u32 output_rate;
     struct lf_tcp_internal *ca;
-    s64 nn_input[NUM_OF_INPUT_METRICS * HISTORY_LEN];
+    struct tcp_sock *tp;
+    s64 nn_input[NUM_OF_GLOBAL_STATS + NUM_OF_INPUT_METRICS * HISTORY_LEN];
     s64 nn_output[NUM_OF_OUTPUT_VALUE];
     
     ca = inet_csk_ca(sk);
@@ -191,7 +173,8 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
         return;
     }
 
-    ret = load_metric(sk, rs);
+    tp = tcp_sk(sk);
+    ret = load_metric(ca, tp, rs);
     if(ret < 0) {
         return;
     }
@@ -205,7 +188,7 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
 
     for (metric_pos = 0; metric_pos < HISTORY_LEN; ++metric_pos) {
         for (value_pos = 0; value_pos < NUM_OF_INPUT_METRICS; ++value_pos) {
-            nn_input[pos] = ca->metrics[(ca->current_pointer + metric_pos) % HISTORY_LEN].values[value_pos];
+            nn_input[pos] = ca->metrics[(ca->current_pointer + HISTORY_LEN - metric_pos) % HISTORY_LEN].values[value_pos];
             pos++;
         }
     }
@@ -306,4 +289,5 @@ module_exit(liteflow_tcp_kernel_exit);
 
 MODULE_DESCRIPTION("liteflow tcp kernel");
 MODULE_AUTHOR("Junxue ZHANG");
+MODULE_AUTHOR("Chaoliang ZENG");
 MODULE_LICENSE("GPL v2");
