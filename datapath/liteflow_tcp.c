@@ -102,7 +102,7 @@ static inline int load_metric(struct lf_tcp_internal *ca, struct tcp_sock *tp, c
     
     int measured_valid_rate = rate_sample_valid(rs);
     if (measured_valid_rate != 0) {
-        return -1;
+        return LF_ERROR;
     }
     
     metric = &(ca->metrics[ca->current_pointer]);
@@ -121,7 +121,7 @@ static inline int load_metric(struct lf_tcp_internal *ca, struct tcp_sock *tp, c
         ca->global_stats[GLOBAL_STATS_POS_MIN_RTT_US] = rs->rtt_us;
     }
 
-    return 0;
+    return LF_SUCCS;
 }
 
 static void lf_tcp_conn_init(struct sock *sk) {
@@ -196,7 +196,7 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
 
     tp = tcp_sk(sk);
     ret = load_metric(ca, tp, rs);
-    if(ret < 0) {
+    if(ret == LF_ERROR) {
         return;
     }
     
@@ -248,6 +248,10 @@ static void lf_tcp_conn_in_ack_event(struct sock *sk, u32 flags)
 
     acked_bytes = tp->snd_una - ca->last_snd_una;
     acked_packets = (u64)acked_bytes / tp->mss_cache;
+    if((u64)acked_bytes % tp->mss_cache != 0) {
+        acked_packets += 1;
+    }
+
     ca->last_snd_una = tp->snd_una;
 
     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_BYTES_ACKED] = acked_bytes;
