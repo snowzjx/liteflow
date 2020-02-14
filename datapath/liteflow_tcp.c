@@ -196,6 +196,10 @@ static void lf_tcp_conn_in_ack_event(struct sock *sk, u32 flags)
 
     acked_bytes = tp->snd_una - ca->last_snd_una;
     acked_packets = (u64)acked_bytes / tp->mss_cache;
+    if((u64)acked_bytes % tp->mss_cache != 0) {
+        acked_packets += 1;
+    }
+
     ca->last_snd_una = tp->snd_una;
 
     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_BYTES_ACKED] = acked_bytes;
