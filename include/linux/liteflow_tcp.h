@@ -5,6 +5,16 @@
 // Here we allow different connection can use different models, just change the APP_ID per connection
 // In this implementation, connection information is put in the input of the NN
 
+#define LF_NL_NAME "LITEFLOW_TCP"
+#define LF_NL_VERSION 1
+
+enum {
+    LF_NL_C_UNSPEC,
+    LF_NL_C_SEND, // Kernel send
+    __LF_NL_C_MAX,
+};
+#define LF_NL_C_MAX (__LF_NL_K_MAX - 1)
+
 // NUM_OF_INPUT_METRICS metrics in a history record
 // such as acked bytes, ecn bytes and so on
 #define INPUT_METRICS_POS_BYTES_ACKED 0
