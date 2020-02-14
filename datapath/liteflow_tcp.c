@@ -50,10 +50,19 @@ static int rate_sample_valid(const struct rate_sample *rs) {
     return ret;
 }
 
+static const struct genl_multicast_group lf_tcp_mcgrps[] = {
+	[LF_TCP_NL_MC_DEFAULT] = { .name = LF_TCP_NL_MC_DEFAULT_NAME, },
+};
+
+
 static struct genl_family lf_gnl_family = {
-    .hdrsize = 0,
-    .name = LF_NL_NAME,     
-    .version = LF_NL_VERSION,  
+    .name = LF_TCP_NL_NAME,     
+    .version = LF_TCP_NL_VERSION,
+    .netnsok = false,
+    .maxattr = LF_TCP_NL_ATTR_MAX,
+	.mcgrps = lf_tcp_mcgrps,
+	.n_mcgrps = ARRAY_SIZE(lf_tcp_mcgrps),
+    .module = THIS_MODULE,
 };
 
 static inline int report_to_user(s64 *nn_input, u32 input_size) {
@@ -61,32 +70,28 @@ static inline int report_to_user(s64 *nn_input, u32 input_size) {
     void *msg_head;
     int ret;
 
-    skb = genlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
+    skb = genlmsg_new(NLMSG_GOODSIZE, GFP_ATOMIC);
 
     if (skb == NULL) {
-        printk (KERN_ERR "Cannot allocate skb for LiteFlow netlink!\n");
+        printk (KERN_ERR "Cannot allocate skb for LiteFlow netlink ...\n");
         return LF_ERROR;
     }
 
-    msg_head = genlmsg_put(skb, 0, 0, &lf_gnl_family, 0, LF_NL_C_SEND);
+    msg_head = genlmsg_put(skb, 0, 0, &lf_gnl_family, GFP_ATOMIC, LF_TCP_NL_C_REPORT);
     if (msg_head == NULL) {
-        printk (KERN_ERR "Cannot allocate msg_head for LiteFlow netlink!\n");
+        printk (KERN_ERR "Cannot allocate msg_head for LiteFlow netlink ...\n");
         return LF_ERROR;
     }
 
-    ret = nla_put(skb, NLA_U64, input_size, nn_input);
+    ret = nla_put(skb, LF_TCP_NL_ATTR_NN_INPUT, input_size * sizeof(s64), nn_input);
     if (ret != 0) {
-        printk (KERN_ERR "Cannot put data for LiteFlow netlink!\n");
+        printk (KERN_ERR "Cannot put data for LiteFlow netlink, error code: %d ...\n", ret);
         return LF_ERROR;
     }
 
     genlmsg_end(skb, msg_head);
 
-    ret = genlmsg_unicast(&init_net, skb, 0);
-    if (ret != 0) {
-        printk (KERN_ERR "Cannot send data from kernel for LiteFlow netlink!\n");
-        return LF_ERROR;    
-    }
+    genlmsg_multicast(&lf_gnl_family, skb, 0, LF_TCP_NL_MC_DEFAULT, GFP_ATOMIC);
 
     return LF_SUCCS;
 }
@@ -180,7 +185,7 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
     u32 output_rate;
     struct lf_tcp_internal *ca;
     struct tcp_sock *tp;
-    s64 nn_input[NUM_OF_GLOBAL_STATS + NUM_OF_INPUT_METRICS * HISTORY_LEN];
+    s64 nn_input[INPUT_SIZE];
     s64 nn_output[NUM_OF_OUTPUT_VALUE];
     
     ca = inet_csk_ca(sk);
@@ -209,7 +214,7 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
         }
     }
 
-    ret = report_to_user(nn_input, NUM_OF_GLOBAL_STATS + NUM_OF_INPUT_METRICS * HISTORY_LEN);
+    ret = report_to_user(nn_input, INPUT_SIZE);
     if (ret == LF_ERROR) {
         printk(KERN_ERR "Report to user space failed!\n");
     }
@@ -259,7 +264,7 @@ static void lf_tcp_conn_in_ack_event(struct sock *sk, u32 flags)
 
 struct app lf_tcp_app = {
     .appid = LF_TCP_APP_ID,
-    .input_size = NUM_OF_GLOBAL_STATS + NUM_OF_INPUT_METRICS * HISTORY_LEN,
+    .input_size = INPUT_SIZE,
     .output_size = NUM_OF_OUTPUT_VALUE,
 };
 
@@ -274,8 +279,8 @@ struct tcp_congestion_ops lf_tcp_congestion_ops = {
     // .set_state = ,
     // .pkts_acked = ，
     .in_ack_event = lf_tcp_conn_in_ack_event,
-    .owner = THIS_MODULE,
     .name = "lf_tcp_kernel",
+    .owner = THIS_MODULE,
 };
 
 static int
@@ -300,7 +305,7 @@ __init liteflow_tcp_kernel_init(void)
         printk(KERN_ERR "Cannot register liteflow generic netlink!\n");
         return ret;
     }
-    printk(KERN_INFO "Successfully register liteflow tcp kernel with liteflow kernel and kernel CC...\n");
+    printk(KERN_INFO "Successfully register liteflow tcp kernel with liteflow kernel, kernel CC and netlink...\n");
     return ret;
 }
 

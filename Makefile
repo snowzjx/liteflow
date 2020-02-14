@@ -4,11 +4,19 @@ LF_KERNEL := lf_kernel
 LF_TCP_KERNERL := lf_tcp_kernel
 SAMPLEMODEL := lf_sample_model
 
+.PHONY: test
+
 module:
 		-@mkdir build
 		@cp -Rf datapath build
 		@cp -Rf include build
 		@cd build/datapath; make all;
+
+test:
+		-@mkdir test_build
+		@cp -Rf test test_build
+		@cp -Rf include test_build
+		@cd test_build/test; make all;
 
 module_install:
 		@cd build/datapath; sudo insmod $(LF_KERNEL).ko
@@ -32,3 +40,4 @@ sample_model_remove:
 
 clean:
 		-@rm -rf build
+		-@rm -rf test_build

@@ -5,15 +5,30 @@
 // Here we allow different connection can use different models, just change the APP_ID per connection
 // In this implementation, connection information is put in the input of the NN
 
-#define LF_NL_NAME "LITEFLOW_TCP"
-#define LF_NL_VERSION 1
+#define LF_TCP_NL_NAME "lf_tcp"
+#define LF_TCP_NL_VERSION 1
 
-enum {
-    LF_NL_C_UNSPEC,
-    LF_NL_C_SEND, // Kernel send
-    __LF_NL_C_MAX,
+#define LF_TCP_NL_MC_DEFAULT_NAME "test"
+
+enum lf_tcp_multicast_groups {
+	LF_TCP_NL_MC_DEFAULT, // Start from 0
+    __LF_TCP_NL_MC_MAX,
 };
-#define LF_NL_C_MAX (__LF_NL_K_MAX - 1)
+#define LF_TCP_NL_MC_MAX (__LF_TCP_NL_MC_MAX - 1) 
+
+enum lf_tcp_controls {
+    LF_TCP_NL_C_UNSPEC,
+    LF_TCP_NL_C_REPORT, // Kernel send
+    __LF_TCP_NL_C_MAX,
+};
+#define LF_TCP_NL_C_MAX (__LF_TCP_NL_C_MAX - 1)
+
+enum lf_tcp_attrs {
+	LF_TCP_NL_ATTR_UNSPEC,
+	LF_TCP_NL_ATTR_NN_INPUT, // The data of NN
+	__LF_TCP_NL_ATTR__MAX,
+};
+#define LF_TCP_NL_ATTR_MAX (__LF_TCP_NL_ATTR__MAX - 1)
 
 // NUM_OF_INPUT_METRICS metrics in a history record
 // such as acked bytes, ecn bytes and so on
@@ -29,6 +44,8 @@ enum {
 #define NUM_OF_INPUT_METRICS 8
 
 #define HISTORY_LEN 3
+
+#define INPUT_SIZE (NUM_OF_GLOBAL_STATS + NUM_OF_INPUT_METRICS * HISTORY_LEN)
 
 // NUM_OF_GLOBAL_STATS per connection
 #define GLOBAL_STATS_POS_MIN_RTT_US 0
