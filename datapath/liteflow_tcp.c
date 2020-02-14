@@ -5,6 +5,7 @@
 #include <linux/net.h>
 #include <net/tcp.h>
 #include <linux/inet_diag.h>
+#include <net/genetlink.h>
 
 #include "linux/liteflow.h"
 #include "linux/liteflow_tcp.h"
@@ -47,6 +48,47 @@ static int rate_sample_valid(const struct rate_sample *rs) {
     if (rs->rtt_us <= 0)
     ret |= 1 << 2;
     return ret;
+}
+
+static struct genl_family lf_gnl_family = {
+    .hdrsize = 0,
+    .name = LF_NL_NAME,     
+    .version = LF_NL_VERSION,  
+};
+
+static inline int report_to_user(s64 *nn_input, u32 input_size) {
+    struct sk_buff *skb;
+    void *msg_head;
+    int ret;
+
+    skb = genlmsg_new(NLMSG_GOODSIZE, GFP_KERNEL);
+
+    if (skb == NULL) {
+        printk (KERN_ERR "Cannot allocate skb for LiteFlow netlink!\n");
+        return LF_ERROR;
+    }
+
+    msg_head = genlmsg_put(skb, 0, 0, &lf_gnl_family, 0, LF_NL_C_SEND);
+    if (msg_head == NULL) {
+        printk (KERN_ERR "Cannot allocate msg_head for LiteFlow netlink!\n");
+        return LF_ERROR;
+    }
+
+    ret = nla_put(skb, NLA_U64, input_size, nn_input);
+    if (ret != 0) {
+        printk (KERN_ERR "Cannot put data for LiteFlow netlink!\n");
+        return LF_ERROR;
+    }
+
+    genlmsg_end(skb, msg_head);
+
+    ret = genlmsg_unicast(&init_net, skb, 0);
+    if (ret != 0) {
+        printk (KERN_ERR "Cannot send data from kernel for LiteFlow netlink!\n");
+        return LF_ERROR;    
+    }
+
+    return LF_SUCCS;
 }
 
 static inline int load_metric(struct lf_tcp_internal *ca, struct tcp_sock *tp, const struct rate_sample *rs) {
@@ -167,6 +209,11 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
         }
     }
 
+    ret = report_to_user(nn_input, NUM_OF_GLOBAL_STATS + NUM_OF_INPUT_METRICS * HISTORY_LEN);
+    if (ret == LF_ERROR) {
+        printk(KERN_ERR "Report to user space failed!\n");
+    }
+    
     ret = lf_query_model(LF_TCP_APP_ID, nn_input, nn_output);
     if (ret == LF_ERROR) {
         printk(KERN_ERR "Query NN model failed!\n");
@@ -247,6 +294,12 @@ __init liteflow_tcp_kernel_init(void)
         printk(KERN_ERR "Cannot register liteflow tcp kernel with liteflow kernel!\n");
         return ret;
     }
+
+    ret = genl_register_family(&lf_gnl_family);
+    if (ret != 0) {
+        printk(KERN_ERR "Cannot register liteflow generic netlink!\n");
+        return ret;
+    }
     printk(KERN_INFO "Successfully register liteflow tcp kernel with liteflow kernel and kernel CC...\n");
     return ret;
 }
@@ -254,8 +307,13 @@ __init liteflow_tcp_kernel_init(void)
 static void
 __exit liteflow_tcp_kernel_exit(void)
 {
+    int ret; 
     tcp_unregister_congestion_control(&lf_tcp_congestion_ops);
     lf_unregister_app(LF_TCP_APP_ID);
+    ret = genl_unregister_family(&lf_gnl_family);
+    if (ret != 0) {
+        printk(KERN_ERR "Cannot unregister liteflow generic netlink!\n");
+    }
 }
 
 module_init(liteflow_tcp_kernel_init);
