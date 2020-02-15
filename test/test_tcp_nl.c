@@ -5,15 +5,6 @@
 
 #include "linux/liteflow_tcp.h"
 
-static struct nla_policy lf_tcp_test_policy[LF_TCP_NL_ATTR_MAX + 1] = {
-	[LF_TCP_NL_ATTR_NN_INPUT] = {
-		.type = NLA_UNSPEC,
-		.minlen = INPUT_SIZE * sizeof(__s64),
-		.maxlen = INPUT_SIZE * sizeof(__s64),
-	},
-};
-
-
 static int skip_seq_check(struct nl_msg *msg, void *arg)
 {
 	return NL_OK;
@@ -24,7 +15,7 @@ static int print_report(struct nl_msg *msg, void* arg)
 	struct nlattr *attr[LF_TCP_NL_ATTR_MAX + 1];
 	int pos;
 
-	genlmsg_parse(nlmsg_hdr(msg), 0, attr, LF_TCP_NL_ATTR_MAX, lf_tcp_test_policy);
+	genlmsg_parse(nlmsg_hdr(msg), 0, attr, LF_TCP_NL_ATTR_MAX, lf_tcp_policy);
 
 	if (!attr[LF_TCP_NL_ATTR_NN_INPUT]) {
 		fprintf(stderr, "Kernel sent empty message!\n");
