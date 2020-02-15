@@ -14,4 +14,4 @@ LiteFlow can be integrated with:
 
 Architecture:
 
-![LiteFlow Architecture](https://snowzjx.me/img/LiftFlow%20Architecture.png)
+<img src="https://snowzjx.me/img/LiftFlow%20Architecture.png" width="600">
