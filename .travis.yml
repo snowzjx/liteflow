@@ -6,5 +6,6 @@ addons:
     - build-essential
     - linux-headers-$(uname -r)
     - libnl-3-dev
+    - libnl-genl-3-dev
 script:
   - make all
