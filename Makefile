@@ -7,8 +7,8 @@ SAMPLEMODEL := lf_sample_model
 .PHONY: test
 
 all:
-	make module
-	make test
+		make module
+		make test
 
 module:
 		-@mkdir build
