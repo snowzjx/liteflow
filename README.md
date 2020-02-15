@@ -11,3 +11,7 @@ LiteFlow can be integrated with:
 * Qdisc
 
 * netfilter
+
+Architecture:
+
+![LiteFlow Architecture](https://snowzjx.me/img/LiftFlow%20Architecture.png)
