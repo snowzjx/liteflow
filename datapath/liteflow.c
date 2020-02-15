@@ -4,7 +4,7 @@
 
 #include "linux/liteflow.h"
 
-#include "model_container.h"
+#include "liteflow_model.h"
 
 #define MAX_APP 32
 #define APP_ID_UNUSE 0

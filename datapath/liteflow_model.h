@@ -1,7 +1,5 @@
-#ifndef LITEFLOW_MODEL_CONTAINER_H
-#define LITEFLOW_MODEL_CONTAINER_H
-
-#include <linux/kernel.h>
+#ifndef LITEFLOW_MODEL_H
+#define LITEFLOW_MODEL_H
 
 struct model_container;
 

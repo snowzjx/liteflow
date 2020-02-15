@@ -6,4 +6,4 @@ addons:
     - build-essential
     - linux-headers-$(uname -r)
 script:
-  - make module
+  - make all

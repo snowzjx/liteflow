@@ -1,7 +1,8 @@
+#include <linux/kernel.h>
 #include <linux/slab.h>
 #include "linux/liteflow.h"
 
-#include "model_container.h"
+#include "liteflow_model.h"
 
 static inline int check_validate(struct model_container *model)
 {

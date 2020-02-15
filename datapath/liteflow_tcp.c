@@ -1,7 +1,6 @@
 // LiteFlow TCP Kernel will register to both LiteFlow kernek and Kernel TCP Congestion Control
 #include <linux/module.h>
 #include <linux/kernel.h>
-#include <linux/version.h>
 #include <linux/net.h>
 #include <net/tcp.h>
 #include <linux/inet_diag.h>
