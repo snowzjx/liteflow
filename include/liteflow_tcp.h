@@ -1,6 +1,14 @@
 #ifndef LITEFLOW_TCP_H
 #define LITEFLOW_TCP_H
 
+#ifndef __KERNEL__
+#include <netlink/genl/genl.h>
+#include <netlink/genl/family.h>
+#include <netlink/genl/ctrl.h>
+#else
+#include <net/genetlink.h>
+#endif
+
 #define LF_TCP_APP_ID 1 // CC applications will be given ID 1
 // Here we allow different connection can use different models, just change the APP_ID per connection
 // In this implementation, connection information is put in the input of the NN
@@ -40,7 +48,7 @@ enum lf_tcp_multicast_groups {
     LF_TCP_NL_MC_DEFAULT, // Start from 0
     __LF_TCP_NL_MC_MAX,
 };
-#define LF_TCP_NL_MC_MAX (__LF_TCP_NL_MC_MAX - 1) 
+#define LF_TCP_NL_MC_MAX (__LF_TCP_NL_MC_MAX - 1)
 
 enum lf_tcp_controls {
     LF_TCP_NL_C_UNSPEC,
@@ -56,14 +64,19 @@ enum lf_tcp_attrs {
 };
 #define LF_TCP_NL_ATTR_MAX (__LF_TCP_NL_ATTR__MAX - 1)
 
-#ifndef __KERNEL__
+#ifdef __KERNEL__
+static const struct nla_policy lf_tcp_policy[LF_TCP_NL_ATTR_MAX + 1] = {
+#else 
 static struct nla_policy lf_tcp_policy[LF_TCP_NL_ATTR_MAX + 1] = {
+#endif
     [LF_TCP_NL_ATTR_NN_INPUT] = {
         .type = NLA_UNSPEC,
+#ifndef __KERNEL__
         .minlen = INPUT_SIZE * sizeof(__s64),
         .maxlen = INPUT_SIZE * sizeof(__s64),
+#endif
     },
 };
-#endif
+
 
 #endif

@@ -7,6 +7,7 @@ SAMPLEMODEL := lf_sample_model
 .PHONY: test
 
 all:
+		make clean
 		make module
 		make test
 

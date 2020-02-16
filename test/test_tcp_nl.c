@@ -3,7 +3,7 @@
 #include <netlink/genl/family.h>
 #include <netlink/genl/ctrl.h>
 
-#include "linux/liteflow_tcp.h"
+#include "liteflow_tcp.h"
 
 static int skip_seq_check(struct nl_msg *msg, void *arg)
 {

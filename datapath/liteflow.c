@@ -4,6 +4,7 @@
 
 #include "linux/liteflow.h"
 
+#include "liteflow_nl.h"
 #include "liteflow_model.h"
 
 #define MAX_APP 32
@@ -210,6 +211,9 @@ lf_activate_model(u8 appid, u32 model_uuid)
     // used as evidence to roll back model
     
     write_unlock(&lf_lock);
+
+    report_model_activation(appid, model_uuid); // Send netlink message to notify user space program
+
     return LF_SUCCS;
 
 error:
@@ -256,10 +260,15 @@ lf_query_model(u8 appid, s64 *input, s64 *output) {
 }
 EXPORT_SYMBOL(lf_query_model);
 
+static struct lf_nl_ops default_nl_ops = {
+    .recv_activation_cb = lf_activate_model,
+};
+
 static int
 __init liteflow_module_init(void)
 {
     u8 appid;
+    int ret;
 
     printk(KERN_INFO "liteflow init...\n");
 
@@ -269,12 +278,15 @@ __init liteflow_module_init(void)
         apps[appid].backup_model = NULL;
     }
 
-    return 0;
+    ret = start_nl(&default_nl_ops);
+
+    return ret;
 }
 
 static void
 __exit liteflow_module_exit(void)
 {
+    stop_nl();
     printk(KERN_INFO "liteflow exit...\n");
 }
 
