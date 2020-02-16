@@ -10,15 +10,33 @@
 #define APP_ID 31
 #define MODEL_UUID 2333
 
+static int rx_reply(struct nl_msg *msg, void* args)
+{
+    fprintf(stdout, "%s called...\n", __FUNCTION__);
+    return NL_OK;
+}
+
+static int rx_multicast(struct nl_msg *msg, void* args)
+{
+    fprintf(stdout, "%s called...\n", __FUNCTION__);
+    return NL_OK;
+}
+
+
 static int skip_seq_check(struct nl_msg *msg, void *arg)
 {
     return NL_OK;
 }
 
-static int rx_msg(struct nl_msg *msg, void* arg)
+static int rx_msg(struct nl_msg *msg, void* args)
 {
-    // TODO
-    return NL_OK;
+    struct genlmsghdr *ghdr = genlmsg_hdr(nlmsg_hdr(msg));
+    if(ghdr->cmd == LF_NL_C_ACTIVATE_MODEL_RET) {
+        return rx_reply(msg, args);
+    } else if(ghdr->cmd == LF_NL_C_REPORT_MODEL_ACTIVATION){
+        return rx_multicast(msg, args);
+    }
+    return -1;
 }
 
 int main(int argc, char** argv)
@@ -98,9 +116,6 @@ int main(int argc, char** argv)
     do {
         ret = nl_recvmsgs(sock, cb);
     } while (!ret);
-
-    nl_cb_put(cb);
-    nl_socket_free(sock);
 
     return 0;
 }
