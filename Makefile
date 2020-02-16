@@ -2,7 +2,6 @@ SHELL := /bin/bash
 
 LF_KERNEL := lf_kernel
 LF_TCP_KERNERL := lf_tcp_kernel
-SAMPLEMODEL := lf_sample_model
 
 .PHONY: test
 
@@ -36,12 +35,6 @@ tcp_kernel_install:
 tcp_kernel_remove:
 		sudo sysctl net.ipv4.tcp_congestion_control=cubic
 		sudo rmmod $(LF_TCP_KERNERL)
-
-sample_model_install:
-		@cd build/datapath; sudo insmod $(SAMPLEMODEL).ko
-
-sample_model_remove:
-		sudo rmmod $(SAMPLEMODEL)
 
 clean:
 		-@rm -rf build

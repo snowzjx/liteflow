@@ -16,7 +16,7 @@
 #define LF_NL_NAME "lf"
 #define LF_NL_VERSION 1
 
-#define LF_NL_MC_DEFAULT_NAME "default"
+#define LF_NL_MC_DEFAULT_NAME "lf_default"
 
 enum lf_multicast_groups {
     LF_NL_MC_DEFAULT, // Start from 0
@@ -50,7 +50,7 @@ static struct nla_policy lf_policy[LF_NL_ATTR_MAX + 1] = {
         .type = NLA_U8,
     },
     [LF_NL_ATTR_MODEL_ID] = {
-        .type = NLA_U64,
+        .type = NLA_U32,
     },
     [LF_NL_ATTR_RET_CODE] = {
         .type = NLA_U8,
@@ -58,11 +58,11 @@ static struct nla_policy lf_policy[LF_NL_ATTR_MAX + 1] = {
 };
 
 struct lf_nl_ops {
-    int (*recv_activation_cb)(u8 appid, u32 model_uuid);
+    int (*recv_activation_cb)(__u8 appid, __u32 model_uuid);
 };
 
 extern int start_nl(struct lf_nl_ops *);
 extern int stop_nl(void);
-extern int report_model_activation(u8 appid, u32 model_uuid);
+extern int report_model_activation(__u8 appid, __u32 model_uuid);
 
 #endif

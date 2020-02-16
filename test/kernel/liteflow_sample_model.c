@@ -7,7 +7,7 @@
 
 #include "linux/liteflow.h"
 
-#define APP_ID 1
+#define APP_ID LF_TEST_ID
 #define MODEL_UUID 2333
 
 static s64 input_vector[8] = {1, 2, 3, 4, 5, 6, 7, 8};
@@ -84,13 +84,13 @@ __init liteflow_sample_model_init(void)
 
     construct_model();
     lf_register_model(APP_ID, &sample_model);
-    lf_activate_model(APP_ID, MODEL_UUID); // 2333 active
-    lf_query_model(APP_ID, input_vector, output_vector); // No active model
+    // lf_activate_model(APP_ID, MODEL_UUID); // 2333 active
+    // lf_query_model(APP_ID, input_vector, output_vector); // No active model
 
-    printk(KERN_INFO "Sample output:\n");
-    for (pos = 0; pos < 6; ++pos) {
-        printk(KERN_INFO "pos %u: %lld\n", pos, output_vector[pos]);
-    }
+    // printk(KERN_INFO "Sample output:\n");
+    // for (pos = 0; pos < 6; ++pos) {
+    //     printk(KERN_INFO "pos %u: %lld\n", pos, output_vector[pos]);
+    // }
     return 0;
 }
 

@@ -42,7 +42,7 @@
 #define LF_TCP_NL_NAME "lf_tcp"
 #define LF_TCP_NL_VERSION 1
 
-#define LF_TCP_NL_MC_DEFAULT_NAME "default"
+#define LF_TCP_NL_MC_DEFAULT_NAME "lf_tcp_default"
 
 enum lf_tcp_multicast_groups {
     LF_TCP_NL_MC_DEFAULT, // Start from 0
