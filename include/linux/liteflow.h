@@ -51,7 +51,7 @@ int lf_query_model(u8 appid, s64 *input, s64 *output);
 #define LF_NL_MC_DEFAULT_NAME "default"
 
 enum lf_multicast_groups {
-	LF_NL_MC_DEFAULT, // Start from 0
+    LF_NL_MC_DEFAULT, // Start from 0
     __LF_NL_MC_MAX,
 };
 #define LF_NL_MC_MAX (__LF_NL_MC_MAX - 1) 
@@ -65,10 +65,10 @@ enum lf_controls {
 #define LF_NL_C_MAX (__LF_NL_C_MAX - 1)
 
 enum lf_attrs {
-	LF_NL_ATTR_UNSPEC,
-	LF_NL_ATTR_APP_ID,
+    LF_NL_ATTR_UNSPEC,
+    LF_NL_ATTR_APP_ID,
     LF_NL_ATTR_MODEL_ID,
-	__LF_NL_ATTR__MAX,
+    __LF_NL_ATTR__MAX,
 };
 #define LF_NL_ATTR_MAX (__LF_NL_ATTR__MAX - 1)
 

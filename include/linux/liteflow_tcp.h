@@ -37,7 +37,7 @@
 #define LF_TCP_NL_MC_DEFAULT_NAME "default"
 
 enum lf_tcp_multicast_groups {
-	LF_TCP_NL_MC_DEFAULT, // Start from 0
+    LF_TCP_NL_MC_DEFAULT, // Start from 0
     __LF_TCP_NL_MC_MAX,
 };
 #define LF_TCP_NL_MC_MAX (__LF_TCP_NL_MC_MAX - 1) 
@@ -50,19 +50,19 @@ enum lf_tcp_controls {
 #define LF_TCP_NL_C_MAX (__LF_TCP_NL_C_MAX - 1)
 
 enum lf_tcp_attrs {
-	LF_TCP_NL_ATTR_UNSPEC,
-	LF_TCP_NL_ATTR_NN_INPUT, // The data of NN
-	__LF_TCP_NL_ATTR__MAX,
+    LF_TCP_NL_ATTR_UNSPEC,
+    LF_TCP_NL_ATTR_NN_INPUT, // The data of NN
+    __LF_TCP_NL_ATTR__MAX,
 };
 #define LF_TCP_NL_ATTR_MAX (__LF_TCP_NL_ATTR__MAX - 1)
 
 #ifndef __KERNEL__
 static struct nla_policy lf_tcp_policy[LF_TCP_NL_ATTR_MAX + 1] = {
-	[LF_TCP_NL_ATTR_NN_INPUT] = {
-		.type = NLA_UNSPEC,
-		.minlen = INPUT_SIZE * sizeof(__s64),
-		.maxlen = INPUT_SIZE * sizeof(__s64),
-	},
+    [LF_TCP_NL_ATTR_NN_INPUT] = {
+        .type = NLA_UNSPEC,
+        .minlen = INPUT_SIZE * sizeof(__s64),
+        .maxlen = INPUT_SIZE * sizeof(__s64),
+    },
 };
 #endif
 

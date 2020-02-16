@@ -50,7 +50,7 @@ static int rate_sample_valid(const struct rate_sample *rs) {
 }
 
 static const struct genl_multicast_group lf_tcp_mcgrps[] = {
-	[LF_TCP_NL_MC_DEFAULT] = { .name = LF_TCP_NL_MC_DEFAULT_NAME, },
+    [LF_TCP_NL_MC_DEFAULT] = { .name = LF_TCP_NL_MC_DEFAULT_NAME, },
 };
 
 
@@ -59,8 +59,8 @@ static struct genl_family lf_gnl_family = {
     .version = LF_TCP_NL_VERSION,
     .netnsok = false,
     .maxattr = LF_TCP_NL_ATTR_MAX,
-	.mcgrps = lf_tcp_mcgrps,
-	.n_mcgrps = ARRAY_SIZE(lf_tcp_mcgrps),
+    .mcgrps = lf_tcp_mcgrps,
+    .n_mcgrps = ARRAY_SIZE(lf_tcp_mcgrps),
     .module = THIS_MODULE,
 };
 
