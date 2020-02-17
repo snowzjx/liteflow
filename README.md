@@ -1,6 +1,6 @@
 # LiteFlow
 
-[![Build Status](https://travis-ci.org/snowzjx/liteflow.svg?branch=master)](https://travis-ci.org/snowzjx/liteflow)
+[![Build Status](https://travis-ci.org/liteflow/liteflow.svg?branch=master)](https://travis-ci.org/liteflow/liteflow)
 
 LiteFlow is a framework to embed a trained neural network into Linux kernel datapath with predictable performance.
 
