@@ -12,13 +12,55 @@
 
 static int rx_reply(struct nl_msg *msg, void* args)
 {
+    struct nlattr *attr[LF_NL_ATTR_MAX + 1];
+    __u8 ret_code;
+
     fprintf(stdout, "%s called...\n", __FUNCTION__);
+    genlmsg_parse(nlmsg_hdr(msg), 0, attr, LF_NL_ATTR_MAX, lf_policy);
+
+    if (!attr[LF_NL_ATTR_RET_CODE]) {
+        fprintf(stderr, "Empty message RX!\n");
+        return NL_OK;
+    }
+
+    ret_code = nla_get_u8(attr[LF_NL_ATTR_RET_CODE]);
+
+    if (ret_code == 0) {
+        fprintf(stdout, "Model activation successful...\n");
+    } else if (ret_code == 4) {
+        fprintf(stdout, "Model activation failed...\n");
+    } else {
+        fprintf(stderr, "Unknown error...\n");
+    }
+    
     return NL_OK;
 }
 
 static int rx_multicast(struct nl_msg *msg, void* args)
 {
+    struct nlattr *attr[LF_NL_ATTR_MAX + 1];
+    __u8 appid;
+    __u32 model_uuid;
+
     fprintf(stdout, "%s called...\n", __FUNCTION__);
+
+    genlmsg_parse(nlmsg_hdr(msg), 0, attr, LF_NL_ATTR_MAX, lf_policy);
+
+    if (!attr[LF_NL_ATTR_APP_ID]) {
+        fprintf(stderr, "Empty message RX!\n");
+        return NL_OK;
+    }
+
+    if (!attr[LF_NL_ATTR_MODEL_ID]) {
+        fprintf(stderr, "Empty message RX!\n");
+        return NL_OK;
+    }
+
+    appid = nla_get_u8(attr[LF_NL_ATTR_APP_ID]);
+    model_uuid = nla_get_u32(attr[LF_NL_ATTR_MODEL_ID]);
+
+    fprintf(stdout, "Received model activation notification. Model %u has been active for app %u...\n", model_uuid, appid);
+
     return NL_OK;
 }
 

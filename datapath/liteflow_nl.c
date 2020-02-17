@@ -56,7 +56,7 @@ static int lf_gnl_rx_msg(struct sk_buff* skb, struct genl_info* info) {
         return LF_ERROR;
     }
 
-    ret = nla_put_u8(skb, LF_NL_ATTR_RET_CODE, lf_ret);
+    ret = nla_put_u8(rskb, LF_NL_ATTR_RET_CODE, lf_ret);
     if (ret != 0) {
         printk (KERN_ERR "Cannot put data for LiteFlow netlink, error code: %d ...\n", ret);
         return LF_ERROR;
