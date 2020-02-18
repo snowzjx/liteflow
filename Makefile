@@ -3,11 +3,12 @@ SHELL := /bin/bash
 LF_KERNEL := lf_kernel
 LF_TCP_KERNERL := lf_tcp_kernel
 
-.PHONY: test
+.PHONY: test lib
 
 all:
 		make clean
 		make module
+		make lib
 		make test
 
 module:
@@ -16,11 +17,17 @@ module:
 		@cp -Rf include build
 		@cd build/datapath; make all;
 
+lib:	
+		-@mkdir build
+		@cp -Rf lib build
+		@cp -Rf include build
+		@cd build/lib; make all;
+
 test:
-		-@mkdir test_build
-		@cp -Rf test test_build
-		@cp -Rf include test_build
-		@cd test_build/test; make all;
+		-@mkdir build
+		@cp -Rf test build
+		@cp -Rf include build
+		@cd build/test; make all;
 
 module_install:
 		@cd build/datapath; sudo insmod $(LF_KERNEL).ko
@@ -38,4 +45,3 @@ tcp_kernel_remove:
 
 clean:
 		-@rm -rf build
-		-@rm -rf test_build
