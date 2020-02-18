@@ -89,10 +89,3 @@ int activate_mode(__u8 appid, __u32 model_uuid)
 
     return ret_code;
 }
-
-// int main(int argc, char** argv)
-// {
-//     int ret = activate_mode(31, 2333);
-//     printf ("ret = %d\n", ret);
-//     return 0;
-// }

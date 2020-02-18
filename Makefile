@@ -3,6 +3,10 @@ SHELL := /bin/bash
 LF_KERNEL := lf_kernel
 LF_TCP_KERNERL := lf_tcp_kernel
 
+LF_LIB := liblf
+
+SHARED_DIR := /usr/local/lib
+
 .PHONY: test lib
 
 all:
@@ -34,6 +38,15 @@ module_install:
 
 module_remove:
 		sudo rmmod $(LF_KERNEL)
+
+lib_install:
+		make lib
+		sudo cp -n build/lib/${LF_LIB}.so ${SHARED_DIR}
+		sudo ldconfig
+
+lib_remove:
+		sudo rm -rf ${SHARED_DIR}/${LF_LIB}.so
+		sudo ldconfig
 
 tcp_kernel_install:
 		@cd build/datapath; sudo insmod $(LF_TCP_KERNERL).ko

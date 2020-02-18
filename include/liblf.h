@@ -13,7 +13,7 @@ extern int activate_mode(__u8 appid, __u32 model_uuid);
 // The return denotes to 'should_stop'
 extern int rx_activation_notification(bool (*rx)(__u8 appid, __u32 model_uuid));
 
-extern int rx_tcp_dp_notification(bool (*rx)(__s64 *nn));
+extern int rx_tcp_dp_notification(bool (*rx)(__s64 *nn, size_t size));
 
 // --- Tools ---
 static struct nl_sock* connect_lf_genl_sock()
