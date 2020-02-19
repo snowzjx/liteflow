@@ -5,7 +5,7 @@
 
 int main(int argc, char** argv)
 {
-    int ret = activate_mode(APPID, MODEL_UUID);
+    int ret = activate_model(APPID, MODEL_UUID);
     printf ("ret = %d\n", ret);
     return 0;
 }

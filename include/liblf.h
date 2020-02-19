@@ -7,7 +7,7 @@
 #include <netlink/genl/family.h>
 #include <netlink/genl/ctrl.h>
 
-extern int activate_mode(__u8 appid, __u32 model_uuid);
+extern int activate_model(__u8 appid, __u32 model_uuid);
 
 // The rx function is a customized function
 // The return denotes to 'should_stop'

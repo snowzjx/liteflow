@@ -26,7 +26,7 @@ static int rx_msg(struct nl_msg *msg, void* args)
     return 0;
 }
 
-int activate_mode(__u8 appid, __u32 model_uuid)
+int activate_model(__u8 appid, __u32 model_uuid)
 {
     struct nl_sock* sock = NULL;
     struct nl_msg* msg = NULL;
