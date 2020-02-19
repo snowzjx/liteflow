@@ -20,16 +20,6 @@ git clone git@github.com:liteflow/liteflow.git
 make all
 ```
 
-The command will sequentially invoke:
-
-```make clean``` to clean the workspace.
-
-```make module ``` to make kernel modules.
-
-```make lib``` to make userspace modules.
-
-```make test``` to make test binaries.
-
 3. Install kernel module
 
 ```
