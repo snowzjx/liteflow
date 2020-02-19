@@ -42,7 +42,7 @@ If you would like to use LiteFlow with TCP congestion control, you should also i
 make tcp_kernel_install
 ```
 
-4. Install standard library
+4. Install user space library
 
 ```
 make lib_install
