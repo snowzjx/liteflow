@@ -41,7 +41,7 @@ module_remove:
 
 lib_install:
 		make lib
-		sudo cp -n build/lib/${LF_LIB}.so ${SHARED_DIR}
+		sudo cp build/lib/${LF_LIB}.so ${SHARED_DIR}
 		sudo ldconfig
 
 lib_remove:
