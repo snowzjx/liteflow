@@ -44,4 +44,4 @@ class FCLayer(Layer):
                                 output_size = weight_output_size,
                                 weights = self.weights,
                                 bias = self.bias)
-        print(code)
+        return code
