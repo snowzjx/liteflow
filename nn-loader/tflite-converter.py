@@ -12,7 +12,7 @@ def tflite_converter(saved_model_dir, export_path):
     converter.target_ops = [tf.lite.OpsSet.TFLITE_BUILTINS,
                             tf.lite.OpsSet.SELECT_TF_OPS]
 
-    # converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
+    converter.optimizations = [tf.lite.Optimize.OPTIMIZE_FOR_SIZE]
 
     # converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
     # converter.inference_input_type = tf.uint8
