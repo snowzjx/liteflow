@@ -40,9 +40,15 @@ def tflite_loader(path):
             output_tensor, output_buffer = get_tensor_and_buffer(model, graph, op.Outputs(0))
 
             layer = TanhLayer(op_code, input_tensor, output_tensor, input_buffer, output_buffer)
+        
         elif op_code.BuiltinCode() == tflite.BuiltinOperator.QUANTIZE:
-            layer = None
-            # TODO
+            assert(op.InputsLength() == 1)
+            assert(op.OutputsLength() == 1)
+            input_tensor, input_buffer = get_tensor_and_buffer(model, graph, op.Inputs(0))
+            output_tensor, output_buffer = get_tensor_and_buffer(model, graph, op.Outputs(0))
+
+            layer = QuanLayer(op_code, input_tensor, output_tensor, input_buffer, output_buffer)
+            
         else:
             click.echo("Unsupported OP Code: %s ..." % op_code.BuiltinCode())
             continue

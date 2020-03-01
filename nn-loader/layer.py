@@ -68,3 +68,30 @@ class TanhLayer(Layer):
 
     def generate_comp_code(self, prefix):
         pass
+
+class QuanLayer(Layer):
+    
+    def __init__(self, op, input_tensor, output_tensor, 
+                            input_buffer, output_buffer):
+        
+        super().__init__(op)
+
+        assert(input_tensor.Shape(0) == 1)
+        assert(output_tensor.Shape(0) == 1)
+        assert(input_tensor.Shape(1) == output_tensor.Shape(1))
+
+        print(input_tensor.ShapeAsNumpy())
+        print(output_tensor.ShapeAsNumpy())
+
+        self.input_size = input_tensor.Shape(1)
+        self.output_size = output_tensor.Shape(1)
+
+        # TODO
+
+class ConcatenationLayer(Layer):
+    # TODO
+    pass
+
+class SplitLayer(Layer):
+    # TODO
+    pass
