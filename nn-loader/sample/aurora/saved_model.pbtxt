@@ -46253,21 +46253,6 @@ meta_graphs {
           }
         }
       }
-      outputs {
-        key: "stochastic_act"
-        value {
-          name: "output/add:0"
-          dtype: DT_FLOAT
-          tensor_shape {
-            dim {
-              size: -1
-            }
-            dim {
-              size: 1
-            }
-          }
-        }
-      }
       method_name: "tensorflow/serving/predict"
     }
   }

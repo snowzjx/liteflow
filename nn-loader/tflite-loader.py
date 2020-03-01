@@ -1,7 +1,9 @@
 import click
 import tflite
+import numpy as np
 
 from layer import *
+
 
 # TODO, Add output layer name to manually stop at some layer
 @click.command()
@@ -38,8 +40,10 @@ def tflite_loader(path):
             output_tensor, output_buffer = get_tensor_and_buffer(model, graph, op.Outputs(0))
 
             layer = TanhLayer(op_code, input_tensor, output_tensor, input_buffer, output_buffer)
+        elif op_code.BuiltinCode() == tflite.BuiltinOperator.QUANTIZE:
+            layer = None
         else:
-            click.echo("Unsupported op code: %s ..." % op_code)
+            click.echo("Unsupported OP Code: %s ..." % op_code.BuiltinCode())
             continue
         layer_list.append(layer)
     
@@ -52,14 +56,18 @@ def get_tensor_and_buffer(model, graph, input):
 
     viewer = None
     if tensor_type == tflite.TensorType.FLOAT32:
-        viewer = '<f4'
+        type = np.float32 
+    elif tensor_type == tflite.TensorType.INT8:
+        type = np.int8 
+    elif tensor_type == tflite.TensorType.INT32:
+        type = np.int32 
     else:
-        raise Exception('TODO')
+        raise Exception('Unsupported Tensor Type: %s ...' % tensor_type)
 
-    if type(raw_buffer) == int:
-        buffer = None
+    if isinstance(raw_buffer, np.ndarray):
+        buffer = raw_buffer.astype(type)
     else:
-        buffer = raw_buffer.view(viewer)
+        buffer = None
 
     return tensor, buffer
 

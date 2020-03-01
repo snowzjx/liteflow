@@ -33,7 +33,7 @@ class FCLayer(Layer):
         self.weights = weight_buffer
         self.bias = bias_buffer
 
-        self.weights.shape = weight_tensor.ShapeAsNumpy();
+        self.weights.shape = weight_tensor.ShapeAsNumpy()
     
     def generate_struct_code(self, prefix):
         pass
