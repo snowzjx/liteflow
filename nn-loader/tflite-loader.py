@@ -42,6 +42,7 @@ def tflite_loader(path):
             layer = TanhLayer(op_code, input_tensor, output_tensor, input_buffer, output_buffer)
         elif op_code.BuiltinCode() == tflite.BuiltinOperator.QUANTIZE:
             layer = None
+            # TODO
         else:
             click.echo("Unsupported OP Code: %s ..." % op_code.BuiltinCode())
             continue
