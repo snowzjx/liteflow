@@ -1,3 +1,6 @@
+# The tflite file can be further converted into json using
+# flatc -t --strict-json --defaults-json  third_party/tensorflow/tensorflow/lite/schema/schema.fbs -- nn-loader/sample/aurora/converted_int_quan_model.tflite 
+
 import click
 import tensorflow as tf
 import numpy as np
@@ -25,8 +28,28 @@ def tflite_converter(saved_model_dir, dataset_path, export_path):
     tflite_model = converter.convert()
     open(export_path, "wb").write(tflite_model)
 
-    click.echo("Done ...")
+    click.echo("Convert done ...")
+
+    click.echo("Begin inspecting model")
+
+    interpreter = tf.lite.Interpreter(model_path=export_path)
+    interpreter.allocate_tensors()
+    input_index_quant = interpreter.get_input_details()[0]["index"]
+    output_index_quant = interpreter.get_output_details()[0]["index"]
+
+    click.echo("Input index quant: {}, output index quant: {}".format(input_index_quant, output_index_quant))
+
+    test_data = np.expand_dims(_dataset[0], axis=0).astype(np.float32)
+    click.echo("Test input: %s" % test_data)
+
+    interpreter.set_tensor(input_index_quant, test_data)
+    interpreter.invoke()
+    predictions = interpreter.get_tensor(output_index_quant)
+
+    click.echo("Output: %s" % predictions)
 
 
 if __name__ == "__main__":
     tflite_converter()
+
+
