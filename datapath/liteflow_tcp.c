@@ -179,7 +179,8 @@ static u32 lf_tcp_conn_undo_cwnd(struct sock *sk)
 // and set sending rate based on returned rate
 static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs) 
 {
-    int ret, global_stats_pos, metric_pos, value_pos, pos = 0;
+    int ret;
+    // int global_stats_pos, metric_pos, value_pos, pos = 0;
     u32 output_rate;
     struct lf_tcp_internal *ca;
     struct tcp_sock *tp;
@@ -200,22 +201,22 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
     
     // Prepare input vector
     // Performance is not good
-    for (global_stats_pos = 0; global_stats_pos < NUM_OF_GLOBAL_STATS; ++global_stats_pos) {
-        nn_input[pos] = ca->global_stats[global_stats_pos];
-        pos++;
-    }
+    // for (global_stats_pos = 0; global_stats_pos < NUM_OF_GLOBAL_STATS; ++global_stats_pos) {
+    //     nn_input[pos] = ca->global_stats[global_stats_pos];
+    //     pos++;
+    // }
 
-    for (metric_pos = 0; metric_pos < HISTORY_LEN; ++metric_pos) {
-        for (value_pos = 0; value_pos < NUM_OF_INPUT_METRICS; ++value_pos) {
-            nn_input[pos] = ca->metrics[(ca->current_pointer + HISTORY_LEN - metric_pos) % HISTORY_LEN].values[value_pos];
-            pos++;
-        }
-    }
+    // for (metric_pos = 0; metric_pos < HISTORY_LEN; ++metric_pos) {
+    //     for (value_pos = 0; value_pos < NUM_OF_INPUT_METRICS; ++value_pos) {
+    //         nn_input[pos] = ca->metrics[(ca->current_pointer + HISTORY_LEN - metric_pos) % HISTORY_LEN].values[value_pos];
+    //         pos++;
+    //     }
+    // }
 
-    ret = report_to_user(nn_input, INPUT_SIZE);
-    if (ret == LF_ERROR) {
-        printk(KERN_ERR "Report to user space failed!\n");
-    }
+    // ret = report_to_user(nn_input, INPUT_SIZE);
+    // if (ret == LF_ERROR) {
+    //     printk(KERN_ERR "Report to user space failed!\n");
+    // }
     
     ret = lf_query_model(LF_TCP_APP_ID, nn_input, nn_output);
     if (ret == LF_ERROR) {
