@@ -1,4 +1,4 @@
-static void {{ prefix }}_comp (double *input, double *output)
+static void {{ prefix }}_comp (s8 *input, s8 *output)
 {
     {% for i in range(0, output_size) %}
     output[{{ i }}] = 
