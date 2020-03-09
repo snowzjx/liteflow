@@ -36,7 +36,13 @@ class FCLayer(Layer):
         self.weights.shape = weight_tensor.ShapeAsNumpy()
     
     def generate_struct_code(self, prefix):
-        pass
+        TEMPLATE_FILE = "fc_layer_struct.c"
+        _template = template.get_template(TEMPLATE_FILE)
+        code = _template.render(prefix = prefix,
+                                uuid = prefix, 
+                                input_size = self.input_size,
+                                output_size = self.output_size)
+        return code
 
     def generate_comp_code(self, prefix):
         TEMPLATE_FILE = "fc_layer_comp.c"
@@ -46,6 +52,7 @@ class FCLayer(Layer):
                                 output_size = self.output_size,
                                 weights = self.weights,
                                 bias = self.bias)
+        return code
 
 class TanhLayer(Layer):
     
@@ -64,10 +71,10 @@ class TanhLayer(Layer):
         self.output_size = output_tensor.Shape(1)
 
     def generate_struct_code(self, prefix):
-        pass
+        return "// Tanh TODO"
 
     def generate_comp_code(self, prefix):
-        pass
+        return "// Tanh TODO"
 
 class QuanLayer(Layer):
     
@@ -86,7 +93,11 @@ class QuanLayer(Layer):
         self.input_size = input_tensor.Shape(1)
         self.output_size = output_tensor.Shape(1)
 
-        # TODO
+    def generate_struct_code(self, prefix):
+        return "// Quan TODO"
+
+    def generate_comp_code(self, prefix):
+        return "// Quan TODO"
 
 class ConcatenationLayer(Layer):
     # TODO

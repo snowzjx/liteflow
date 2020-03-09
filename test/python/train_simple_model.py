@@ -1,5 +1,6 @@
 import tensorflow as tf
 import numpy as np
+import os
 
 def loss_func(predicted_y, target_y):
   return tf.reduce_mean(tf.square(predicted_y - target_y))
@@ -12,13 +13,16 @@ dataset_x = np.array([
     [1, 3, 2, 4],
 ]).astype(np.float32)
 
+os.system("mkdir -p /tmp/simple_model/")
+
 np.save("/tmp/simple_model/r_dataset", dataset_x)
 
 dataset_y = np.array([10.0, 20.0, 30.0, 30.0, 12.0])
 
 model = tf.keras.models.Sequential([
   tf.keras.layers.Input(shape=(4,)),
-  tf.keras.layers.Dense(8, activation='tanh'),
+  # tf.keras.layers.Dense(8, activation='tanh'),
+  tf.keras.layers.Dense(8),
   tf.keras.layers.Dense(1)
 ])
 

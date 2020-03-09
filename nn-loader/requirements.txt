@@ -1,0 +1,2 @@
+tensorflow>=2.1.0
+tflite==2.1.0

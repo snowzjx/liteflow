@@ -1,6 +1,6 @@
-struct model_layer layer1 __read_mostly = {
-    .uuid = 23331,
-    .input_size = 8,
-    .output_size = 5,
-    .comp_func = layer1_comp,
+struct model_layer layer_{{ prefix }} __read_mostly = {
+    .uuid = {{ uuid }},
+    .input_size = {{ input_size }},
+    .output_size = {{ output_size }},
+    .comp_func = fc_{{ prefix }}_comp,
 };
