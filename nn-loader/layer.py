@@ -115,6 +115,45 @@ class QuanLayer(Layer):
                                 q_max = self.q_max)
         return code
 
+class DeQuanLayer(Layer):
+
+    q_min = 0
+    q_max = 0
+    
+    def __init__(self, op, input_tensor, output_tensor, 
+                            input_buffer, output_buffer):
+        
+        super().__init__(op)
+
+        assert(input_tensor.Shape(0) == 1)
+        assert(output_tensor.Shape(0) == 1)
+        assert(input_tensor.Shape(1) == output_tensor.Shape(1))
+
+        self.input_size = input_tensor.Shape(1)
+        self.output_size = output_tensor.Shape(1)
+
+        self.q_min = input_tensor.Quantization().Min(0)
+        self.q_max = input_tensor.Quantization().Max(0)
+
+    def generate_struct_code(self, prefix):
+        TEMPLATE_FILE = "dequan_layer_struct.c"
+        _template = template.get_template(TEMPLATE_FILE)
+        code = _template.render(prefix = prefix,
+                                uuid = prefix, 
+                                input_size = self.input_size,
+                                output_size = self.output_size)
+        return code
+
+    def generate_comp_code(self, prefix):
+        TEMPLATE_FILE = "dequan_layer_comp.c"
+        _template = template.get_template(TEMPLATE_FILE)
+        code = _template.render(prefix=prefix,
+                                input_size = self.input_size,
+                                output_size = self.output_size,
+                                q_min = self.q_min,
+                                q_max = self.q_max)
+        return code
+
 class ConcatenationLayer(Layer):
     # TODO
     pass

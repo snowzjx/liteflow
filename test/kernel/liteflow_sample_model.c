@@ -77,6 +77,24 @@ struct model_layer layer_2 __read_mostly = {
 };
 /************************************ End Layer 2 ************************************/
 
+/************************************** Layer 3 **************************************/
+static void dequan_3_comp (s64 *input, s64 *output)
+{
+    // Q_min: 0.0
+    // Q_max: 30.00000762939453
+    
+    output[0] = (s8)( (input[0] + 128) * 30 / 255 + 0); 
+    
+}
+
+struct model_layer layer_3 __read_mostly = {
+    .uuid = 3,
+    .input_size = 1,
+    .output_size = 1,
+    .comp_func = dequan_3_comp,
+};
+/************************************ End Layer 3 ************************************/
+
 
 /************************************** Model  **************************************/
 
@@ -111,6 +129,7 @@ __init liteflow_2333_model_init(void)
     list_add(&layer_0.list, &model_2333.layers);
     list_add(&layer_1.list, &layer_0.list);
     list_add(&layer_2.list, &layer_1.list);
+    list_add(&layer_3.list, &layer_2.list);
 
     
     // Test mode = on
@@ -123,10 +142,10 @@ __init liteflow_2333_model_init(void)
     lf_activate_model(1, 2333);
     // TODO
     
-    _input[0] = ... ;
-    _input[1] = ... ;
-    _input[2] = ... ;
-    _input[3] = ... ;
+    _input[0] = 4 ;
+    _input[1] = 5 ;
+    _input[2] = 6 ;
+    _input[3] = 6 ;
 
     lf_query_model(1, _input, _output);
 

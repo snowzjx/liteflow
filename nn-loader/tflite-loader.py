@@ -24,7 +24,7 @@ def tflite_loader(path, uuid, appid, export, test):
     graph = model.Subgraphs(0)
     num_ops = graph.OperatorsLength()
     layer_list = []
-    for op_index in range(0, num_ops - 1):
+    for op_index in range(0, num_ops):
         op = graph.Operators(op_index)
         op_code = model.OperatorCodes(op.OpcodeIndex())
         if op_code.BuiltinCode() == tflite.BuiltinOperator.FULLY_CONNECTED:
@@ -52,10 +52,19 @@ def tflite_loader(path, uuid, appid, export, test):
             assert(op.OutputsLength() == 1)
             input_tensor, input_buffer = get_tensor_and_buffer(model, graph, op.Inputs(0))
             output_tensor, output_buffer = get_tensor_and_buffer(model, graph, op.Outputs(0))
-            
+
             layer = QuanLayer(op_code, input_tensor, output_tensor, input_buffer, output_buffer)
             layer_list.append(layer)
-            
+
+        elif op_code.BuiltinCode() == tflite.BuiltinOperator.DEQUANTIZE:
+            assert(op.InputsLength() == 1)
+            assert(op.OutputsLength() == 1)
+            input_tensor, input_buffer = get_tensor_and_buffer(model, graph, op.Inputs(0))
+            output_tensor, output_buffer = get_tensor_and_buffer(model, graph, op.Outputs(0))
+
+            layer = DeQuanLayer(op_code, input_tensor, output_tensor, input_buffer, output_buffer)
+            layer_list.append(layer)
+
         else:
             click.echo("Unsupported OP Code: %s ..." % op_code.BuiltinCode())
             continue
