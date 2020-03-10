@@ -4,3 +4,4 @@ python/dist/
 python/liteflow/liteflow.egg-info/
 *.pyc
 .vscode/
+.DS_Store
