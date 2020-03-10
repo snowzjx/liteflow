@@ -51,5 +51,3 @@ def tflite_converter(saved_model_dir, dataset_path, export_path):
 
 if __name__ == "__main__":
     tflite_converter()
-
-
