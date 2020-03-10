@@ -6,11 +6,12 @@ from layer import *
 
 # TODO, Add output layer name to manually stop at some layer
 @click.command()
-@click.argument('path', type=click.Path(exists=True, file_okay=True, dir_okay=False))
-@click.argument('uuid', type= click.INT)
-@click.argument('appid', type= click.INT)
+@click.argument('path', type =click.Path(exists=True, file_okay=True, dir_okay=False))
+@click.argument('uuid', type = click.INT)
+@click.argument('appid', type = click.INT)
 @click.argument('export', type=click.Path(exists=True, file_okay=False, dir_okay=True))
-def tflite_loader(path, uuid, appid, export):
+@click.option('-t', '--test', type = click.BOOL)
+def tflite_loader(path, uuid, appid, export, test):
     click.echo("Reading model from %s ..." % click.format_filename(path))
     if not path.endswith('.tflite'):
         click.echo("The file should end with .tflite")
@@ -51,8 +52,9 @@ def tflite_loader(path, uuid, appid, export):
             assert(op.OutputsLength() == 1)
             input_tensor, input_buffer = get_tensor_and_buffer(model, graph, op.Inputs(0))
             output_tensor, output_buffer = get_tensor_and_buffer(model, graph, op.Outputs(0))
-            # TODO
-            # layer = QuanLayer(op_code, input_tensor, output_tensor, input_buffer, output_buffer)
+            
+            layer = QuanLayer(op_code, input_tensor, output_tensor, input_buffer, output_buffer)
+            layer_list.append(layer)
             
         else:
             click.echo("Unsupported OP Code: %s ..." % op_code.BuiltinCode())
@@ -67,9 +69,10 @@ def tflite_loader(path, uuid, appid, export):
                             app_id = appid,
                             layer_list = layer_list,
                             input_size = model_input_size,
-                            output_size = model_output_size)
+                            output_size = model_output_size,
+                            test_mode = test)
 
-    OUTPUT_FILE = f"{export}/main.c"
+    OUTPUT_FILE = f"{export}/lf_model_{uuid}.c"
     with open(OUTPUT_FILE, "w") as output_file:
         output_file.write(code)
 

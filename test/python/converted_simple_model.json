@@ -1,0 +1,395 @@
+{
+  "version": 3,
+  "operator_codes": [
+    {
+      "builtin_code": "FULLY_CONNECTED",
+      "version": 4
+    },
+    {
+      "builtin_code": "QUANTIZE",
+      "version": 1
+    },
+    {
+      "builtin_code": "DEQUANTIZE",
+      "version": 2
+    }
+  ],
+  "subgraphs": [
+    {
+      "tensors": [
+        {
+          "shape": [
+            1,
+            1
+          ],
+          "type": "INT8",
+          "buffer": 5,
+          "name": "Identity_int8",
+          "quantization": {
+            "min": [
+              0.0
+            ],
+            "max": [
+              30.000008
+            ],
+            "scale": [
+              0.117647
+            ],
+            "zero_point": [
+              -128
+            ],
+            "details_type": "NONE",
+            "quantized_dimension": 0
+          },
+          "is_variable": false
+        },
+        {
+          "shape": [
+            1,
+            8
+          ],
+          "type": "INT8",
+          "buffer": 6,
+          "name": "StatefulPartitionedCall/sequential/dense/BiasAdd",
+          "quantization": {
+            "min": [
+              -11.755895
+            ],
+            "max": [
+              6.168299
+            ],
+            "scale": [
+              0.070291
+            ],
+            "zero_point": [
+              39
+            ],
+            "details_type": "NONE",
+            "quantized_dimension": 0
+          },
+          "is_variable": false
+        },
+        {
+          "shape": [
+            8,
+            4
+          ],
+          "type": "INT8",
+          "buffer": 3,
+          "name": "StatefulPartitionedCall/sequential/dense/MatMul/ReadVariableOp/transpose",
+          "quantization": {
+            "min": [
+              -1.402412
+            ],
+            "max": [
+              1.266349
+            ],
+            "scale": [
+              0.011043
+            ],
+            "zero_point": [
+              0
+            ],
+            "details_type": "NONE",
+            "quantized_dimension": 0
+          },
+          "is_variable": false
+        },
+        {
+          "shape": [
+            8
+          ],
+          "type": "INT32",
+          "buffer": 1,
+          "name": "StatefulPartitionedCall/sequential/dense/MatMul_bias",
+          "quantization": {
+            "scale": [
+              0.00026
+            ],
+            "zero_point": [
+              0
+            ],
+            "details_type": "NONE",
+            "quantized_dimension": 0
+          },
+          "is_variable": false
+        },
+        {
+          "shape": [
+            1,
+            8
+          ],
+          "type": "INT8",
+          "buffer": 2,
+          "name": "StatefulPartitionedCall/sequential/dense_1/MatMul/ReadVariableOp/transpose",
+          "quantization": {
+            "min": [
+              -1.543306
+            ],
+            "max": [
+              1.752059
+            ],
+            "scale": [
+              0.013796
+            ],
+            "zero_point": [
+              0
+            ],
+            "details_type": "NONE",
+            "quantized_dimension": 0
+          },
+          "is_variable": false
+        },
+        {
+          "shape": [
+            1
+          ],
+          "type": "INT32",
+          "buffer": 4,
+          "name": "StatefulPartitionedCall/sequential/dense_1/MatMul_bias",
+          "quantization": {
+            "scale": [
+              0.00097
+            ],
+            "zero_point": [
+              0
+            ],
+            "details_type": "NONE",
+            "quantized_dimension": 0
+          },
+          "is_variable": false
+        },
+        {
+          "shape": [
+            1,
+            4
+          ],
+          "type": "INT8",
+          "buffer": 7,
+          "name": "input_1_int8",
+          "quantization": {
+            "min": [
+              0.0
+            ],
+            "max": [
+              6.0
+            ],
+            "scale": [
+              0.023529
+            ],
+            "zero_point": [
+              -128
+            ],
+            "details_type": "NONE",
+            "quantized_dimension": 0
+          },
+          "is_variable": false
+        },
+        {
+          "shape": [
+            1,
+            4
+          ],
+          "type": "FLOAT32",
+          "buffer": 0,
+          "name": "input_1",
+          "is_variable": false
+        },
+        {
+          "shape": [
+            1,
+            1
+          ],
+          "type": "FLOAT32",
+          "buffer": 0,
+          "name": "Identity",
+          "is_variable": false
+        }
+      ],
+      "inputs": [
+        7
+      ],
+      "outputs": [
+        8
+      ],
+      "operators": [
+        {
+          "opcode_index": 1,
+          "inputs": [
+            7
+          ],
+          "outputs": [
+            6
+          ],
+          "builtin_options_type": "NONE",
+          "custom_options_format": "FLEXBUFFERS"
+        },
+        {
+          "opcode_index": 0,
+          "inputs": [
+            6,
+            2,
+            3
+          ],
+          "outputs": [
+            1
+          ],
+          "builtin_options_type": "FullyConnectedOptions",
+          "builtin_options": {
+            "fused_activation_function": "NONE",
+            "weights_format": "DEFAULT",
+            "keep_num_dims": false
+          },
+          "custom_options_format": "FLEXBUFFERS"
+        },
+        {
+          "opcode_index": 0,
+          "inputs": [
+            1,
+            4,
+            5
+          ],
+          "outputs": [
+            0
+          ],
+          "builtin_options_type": "FullyConnectedOptions",
+          "builtin_options": {
+            "fused_activation_function": "NONE",
+            "weights_format": "DEFAULT",
+            "keep_num_dims": false
+          },
+          "custom_options_format": "FLEXBUFFERS"
+        },
+        {
+          "opcode_index": 2,
+          "inputs": [
+            0
+          ],
+          "outputs": [
+            8
+          ],
+          "builtin_options_type": "NONE",
+          "custom_options_format": "FLEXBUFFERS"
+        }
+      ]
+    }
+  ],
+  "description": "TOCO Converted.",
+  "buffers": [
+    {
+    },
+    {
+      "data": [
+        228,
+        235,
+        255,
+        255,
+        86,
+        224,
+        255,
+        255,
+        152,
+        234,
+        255,
+        255,
+        121,
+        221,
+        255,
+        255,
+        196,
+        16,
+        0,
+        0,
+        126,
+        17,
+        0,
+        0,
+        229,
+        33,
+        0,
+        0,
+        250,
+        24,
+        0,
+        0
+      ]
+    },
+    {
+      "data": [
+        96,
+        115,
+        127,
+        77,
+        155,
+        206,
+        144,
+        217
+      ]
+    },
+    {
+      "data": [
+        48,
+        193,
+        206,
+        75,
+        99,
+        10,
+        154,
+        53,
+        44,
+        195,
+        253,
+        67,
+        115,
+        244,
+        209,
+        108,
+        148,
+        2,
+        61,
+        129,
+        165,
+        8,
+        217,
+        155,
+        247,
+        62,
+        59,
+        131,
+        158,
+        199,
+        14,
+        162
+      ]
+    },
+    {
+      "data": [
+        91,
+        253,
+        255,
+        255
+      ]
+    },
+    {
+    },
+    {
+    },
+    {
+    },
+    {
+      "data": [
+        49,
+        46,
+        53,
+        46,
+        48
+      ]
+    }
+  ],
+  "metadata": [
+    {
+      "name": "min_runtime_version",
+      "buffer": 8
+    }
+  ]
+}

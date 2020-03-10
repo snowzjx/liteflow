@@ -8,32 +8,26 @@
 
 
 /************************************** Layer 0 **************************************/
-static void fc_0_comp (s64 *input, s64 *output)
+static void quan_0_comp (s64 *input, s64 *output)
 {
+    // Q_min: 0.0
+    // Q_max: 6.0
     
-    output[0] =input[0] * 48 + input[1] * -63 + input[2] * -50 + input[3] * 75+  228;
+    output[0] = (s8)((input[0] - 0) * 255 / (6 - 0) - 128);
     
-    output[1] =input[0] * 99 + input[1] * 10 + input[2] * -102 + input[3] * 53+  235;
+    output[1] = (s8)((input[1] - 0) * 255 / (6 - 0) - 128);
     
-    output[2] =input[0] * 44 + input[1] * -61 + input[2] * -3 + input[3] * 67+  255;
+    output[2] = (s8)((input[2] - 0) * 255 / (6 - 0) - 128);
     
-    output[3] =input[0] * 115 + input[1] * -12 + input[2] * -47 + input[3] * 108+  255;
-    
-    output[4] =input[0] * -108 + input[1] * 2 + input[2] * 61 + input[3] * -127+  86;
-    
-    output[5] =input[0] * -91 + input[1] * 8 + input[2] * -39 + input[3] * -101+  224;
-    
-    output[6] =input[0] * -9 + input[1] * 62 + input[2] * 59 + input[3] * -125+  255;
-    
-    output[7] =input[0] * -98 + input[1] * -57 + input[2] * 14 + input[3] * -94+  255;
+    output[3] = (s8)((input[3] - 0) * 255 / (6 - 0) - 128);
     
 }
 
 struct model_layer layer_0 __read_mostly = {
     .uuid = 0,
     .input_size = 4,
-    .output_size = 8,
-    .comp_func = fc_0_comp,
+    .output_size = 4,
+    .comp_func = quan_0_comp,
 };
 /************************************ End Layer 0 ************************************/
 
@@ -41,17 +35,47 @@ struct model_layer layer_0 __read_mostly = {
 static void fc_1_comp (s64 *input, s64 *output)
 {
     
-    output[0] =input[0] * 96 + input[1] * 115 + input[2] * 127 + input[3] * 77 + input[4] * -101 + input[5] * -50 + input[6] * -112 + input[7] * -39+  91;
+    output[0] = (s8)(input[0] * 48 + input[1] * -63 + input[2] * -50 + input[3] * 75+  228);
+    
+    output[1] = (s8)(input[0] * 99 + input[1] * 10 + input[2] * -102 + input[3] * 53+  235);
+    
+    output[2] = (s8)(input[0] * 44 + input[1] * -61 + input[2] * -3 + input[3] * 67+  255);
+    
+    output[3] = (s8)(input[0] * 115 + input[1] * -12 + input[2] * -47 + input[3] * 108+  255);
+    
+    output[4] = (s8)(input[0] * -108 + input[1] * 2 + input[2] * 61 + input[3] * -127+  86);
+    
+    output[5] = (s8)(input[0] * -91 + input[1] * 8 + input[2] * -39 + input[3] * -101+  224);
+    
+    output[6] = (s8)(input[0] * -9 + input[1] * 62 + input[2] * 59 + input[3] * -125+  255);
+    
+    output[7] = (s8)(input[0] * -98 + input[1] * -57 + input[2] * 14 + input[3] * -94+  255);
     
 }
 
 struct model_layer layer_1 __read_mostly = {
     .uuid = 1,
-    .input_size = 8,
-    .output_size = 1,
+    .input_size = 4,
+    .output_size = 8,
     .comp_func = fc_1_comp,
 };
 /************************************ End Layer 1 ************************************/
+
+/************************************** Layer 2 **************************************/
+static void fc_2_comp (s64 *input, s64 *output)
+{
+    
+    output[0] = (s8)(input[0] * 96 + input[1] * 115 + input[2] * 127 + input[3] * 77 + input[4] * -101 + input[5] * -50 + input[6] * -112 + input[7] * -39+  91);
+    
+}
+
+struct model_layer layer_2 __read_mostly = {
+    .uuid = 2,
+    .input_size = 8,
+    .output_size = 1,
+    .comp_func = fc_2_comp,
+};
+/************************************ End Layer 2 ************************************/
 
 
 /************************************** Model  **************************************/
@@ -62,16 +86,55 @@ struct model_container model_2333 __read_mostly = {
     .output_size = 1,
 };
 
+
+/******************************************** Test Mode ********************************************/
+struct app app = {
+    .appid = 1,
+    .input_size = 4,
+    .output_size = 1,
+};
+
+/**************************************** End Test Mode ********************************************/
+
+
 static int
 __init liteflow_2333_model_init(void)
 {
-    lf_register_model(1, &model_2333);
+    
+    s64 _input[4];
+    s64 _output[1];
+    int _output_pos;
+    
 
-    // Construct
+    // Construct layers
     INIT_LIST_HEAD(&model_2333.layers);
     list_add(&layer_0.list, &model_2333.layers);
     list_add(&layer_1.list, &layer_0.list);
+    list_add(&layer_2.list, &layer_1.list);
+
     
+    // Test mode = on
+    lf_register_app(&app);
+    
+    
+    lf_register_model(1, &model_2333);
+
+    
+    lf_activate_model(1, 2333);
+    // TODO
+    
+    _input[0] = ... ;
+    _input[1] = ... ;
+    _input[2] = ... ;
+    _input[3] = ... ;
+
+    lf_query_model(1, _input, _output);
+
+    for (_output_pos = 0; _output_pos < 1; ++_output_pos) {
+        printk(KERN_INFO "Output_%d: %lld\n", _output_pos, _output[_output_pos]);
+    }
+    
+
     return 0;
 }
 
@@ -79,13 +142,18 @@ static void
 __exit liteflow_2333_model_exit(void)
 {
     lf_unregister_model(1, 2333);
+
+    
+    // Test mode = on
+    lf_unregister_app(1);
+    
 }
 
 module_init(liteflow_2333_model_init);
 module_exit(liteflow_2333_model_exit);
 
 MODULE_DESCRIPTION("liteflow 2333 model");
-MODULE_AUTHOR("Junxue ZHANG");
+MODULE_AUTHOR("liteflow");
 MODULE_LICENSE("GPL v2");
 
 /************************************ End Model  ************************************/
