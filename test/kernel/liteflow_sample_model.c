@@ -11,15 +11,15 @@
 static void quan_0_comp (s64 *input, s64 *output)
 {
     // Q_min: 0.0
-    // Q_max: 6.0
+    // Q_max: 62.0
     
-    output[0] = (s8)((input[0] - 0) * 255 / (6 - 0) - 128);
+    output[0] = (s8)((input[0] - 0) * 255 / (62 - 0) - 128);
     
-    output[1] = (s8)((input[1] - 0) * 255 / (6 - 0) - 128);
+    output[1] = (s8)((input[1] - 0) * 255 / (62 - 0) - 128);
     
-    output[2] = (s8)((input[2] - 0) * 255 / (6 - 0) - 128);
+    output[2] = (s8)((input[2] - 0) * 255 / (62 - 0) - 128);
     
-    output[3] = (s8)((input[3] - 0) * 255 / (6 - 0) - 128);
+    output[3] = (s8)((input[3] - 0) * 255 / (62 - 0) - 128);
     
 }
 
@@ -35,21 +35,21 @@ struct model_layer layer_0 __read_mostly = {
 static void fc_1_comp (s64 *input, s64 *output)
 {
     
-    output[0] = (s8)(input[0] * 48 + input[1] * -63 + input[2] * -50 + input[3] * 75+  228);
+    output[0] = (s8)(input[0] * -13 + input[1] * 9 + input[2] * 19 + input[3] * -31+  143);
     
-    output[1] = (s8)(input[0] * 99 + input[1] * 10 + input[2] * -102 + input[3] * 53+  235);
+    output[1] = (s8)(input[0] * -8 + input[1] * 12 + input[2] * 8 + input[3] * -39+  255);
     
-    output[2] = (s8)(input[0] * 44 + input[1] * -61 + input[2] * -3 + input[3] * 67+  255);
+    output[2] = (s8)(input[0] * -38 + input[1] * -22 + input[2] * 49 + input[3] * -49+  255);
     
-    output[3] = (s8)(input[0] * 115 + input[1] * -12 + input[2] * -47 + input[3] * 108+  255);
+    output[3] = (s8)(input[0] * -12 + input[1] * 32 + input[2] * -8 + input[3] * 11+  255);
     
-    output[4] = (s8)(input[0] * -108 + input[1] * 2 + input[2] * 61 + input[3] * -127+  86);
+    output[4] = (s8)(input[0] * -127 + input[1] * 2 + input[2] * 21 + input[3] * -9+  172);
     
-    output[5] = (s8)(input[0] * -91 + input[1] * 8 + input[2] * -39 + input[3] * -101+  224);
+    output[5] = (s8)(input[0] * -1 + input[1] * -3 + input[2] * 46 + input[3] * 3+  0);
     
-    output[6] = (s8)(input[0] * -9 + input[1] * 62 + input[2] * 59 + input[3] * -125+  255);
+    output[6] = (s8)(input[0] * -42 + input[1] * -22 + input[2] * -20 + input[3] * 6+  0);
     
-    output[7] = (s8)(input[0] * -98 + input[1] * -57 + input[2] * 14 + input[3] * -94+  255);
+    output[7] = (s8)(input[0] * 15 + input[1] * -5 + input[2] * -55 + input[3] * 27+  0);
     
 }
 
@@ -65,7 +65,7 @@ struct model_layer layer_1 __read_mostly = {
 static void fc_2_comp (s64 *input, s64 *output)
 {
     
-    output[0] = (s8)(input[0] * 96 + input[1] * 115 + input[2] * 127 + input[3] * 77 + input[4] * -101 + input[5] * -50 + input[6] * -112 + input[7] * -39+  91);
+    output[0] = (s8)(input[0] * 31 + input[1] * -75 + input[2] * -127 + input[3] * -114 + input[4] * -24 + input[5] * -21 + input[6] * -48 + input[7] * 97+  3);
     
 }
 
@@ -81,7 +81,7 @@ struct model_layer layer_2 __read_mostly = {
 static void dequan_3_comp (s64 *input, s64 *output)
 {
     // Q_min: 0.0
-    // Q_max: 30.00000762939453
+    // Q_max: 30.02955436706543
     
     output[0] = (s8)( (input[0] + 128) * 30 / 255 + 0); 
     
@@ -142,10 +142,10 @@ __init liteflow_2333_model_init(void)
     lf_activate_model(1, 2333);
     // TODO
     
-    _input[0] = 4 ;
-    _input[1] = 5 ;
-    _input[2] = 6 ;
-    _input[3] = 6 ;
+    _input[0] = 11;
+    _input[1] = 31;
+    _input[2] = 21;
+    _input[3] = 41;
 
     lf_query_model(1, _input, _output);
 

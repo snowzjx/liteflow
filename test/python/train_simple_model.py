@@ -6,18 +6,18 @@ def loss_func(predicted_y, target_y):
   return tf.reduce_mean(tf.square(predicted_y - target_y))
 
 dataset_x = np.array([
-    [1, 2, 3, 4],
-    [2, 3, 4, 5],
-    [3, 4, 5, 6],
-    [4, 5, 6, 6],
-    [1, 3, 2, 4],
+    [10, 20, 30, 40],
+    [21, 32, 41, 51],
+    [33, 43, 53, 62],
+    [41, 50, 60, 60],
+    [11, 31, 21, 41],
 ]).astype(np.float32)
 
 os.system("mkdir -p /tmp/simple_model/")
 
 np.save("/tmp/simple_model/r_dataset", dataset_x)
 
-dataset_y = np.array([10.0, 20.0, 30.0, 30.0, 12.0])
+dataset_y = np.array([10.0, 20.0, 30.0, 30.0, 20.0])
 
 model = tf.keras.models.Sequential([
   tf.keras.layers.Input(shape=(4,)),
