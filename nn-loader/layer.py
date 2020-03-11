@@ -99,6 +99,7 @@ class QuanLayer(Layer):
 
     q_min = 0
     q_max = 0
+    zero_point = 0
     
     def __init__(self, op, input_tensor, output_tensor, 
                             input_buffer, output_buffer):
@@ -114,6 +115,8 @@ class QuanLayer(Layer):
 
         self.q_min = output_tensor.Quantization().Min(0)
         self.q_max = output_tensor.Quantization().Max(0)
+
+        self.zero_point = output_tensor.Quantization().ZeroPoint(0)
 
     def generate_struct_code(self, prefix):
         TEMPLATE_FILE = "quan_layer_struct.c"
@@ -131,7 +134,8 @@ class QuanLayer(Layer):
                                 input_size = self.input_size,
                                 output_size = self.output_size,
                                 q_min = self.q_min,
-                                q_max = self.q_max)
+                                q_max = self.q_max,
+                                zero_point = self.zero_point)
         return code
 
 class DeQuanLayer(Layer):
