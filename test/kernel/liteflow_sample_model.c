@@ -13,19 +13,19 @@ static void quan_0_comp (s64 *input, s64 *output)
     // Q_min: 0.0
     // Q_max: 62.0
     
-    output[0] = (input[0] - 0) * 255 / (62 - 0) - 128;    
+    output[0] = (input[0] - 0) * 255 / 62 + -128;    
     printk(KERN_INFO "Output_quan_0_%d: %lld", 0, output[0]);
     
     
-    output[1] = (input[1] - 0) * 255 / (62 - 0) - 128;    
+    output[1] = (input[1] - 0) * 255 / 62 + -128;    
     printk(KERN_INFO "Output_quan_0_%d: %lld", 1, output[1]);
     
     
-    output[2] = (input[2] - 0) * 255 / (62 - 0) - 128;    
+    output[2] = (input[2] - 0) * 255 / 62 + -128;    
     printk(KERN_INFO "Output_quan_0_%d: %lld", 2, output[2]);
     
     
-    output[3] = (input[3] - 0) * 255 / (62 - 0) - 128;    
+    output[3] = (input[3] - 0) * 255 / 62 + -128;    
     printk(KERN_INFO "Output_quan_0_%d: %lld", 3, output[3]);
     
     
@@ -177,10 +177,10 @@ __init liteflow_2333_model_init(void)
     lf_activate_model(1, 2333);
     
     // TODO
-    _input[0] = 20 ;
-    _input[1] = 30 ;
-    _input[2] = 40 ;
-    _input[3] = 50 ;
+    _input[0] = 11 ;
+    _input[1] = 31 ;
+    _input[2] = 21 ;
+    _input[3] = 41 ;
 
     lf_query_model(1, _input, _output);
 
