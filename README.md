@@ -8,9 +8,9 @@ The key of LiteFlow is to provide predictable performance neural network for Lin
 
 ## Clone the repo
 
+1. Clone from Github
 ```
 git clone git@github.com:liteflow/liteflow.git
-
 ```
 
 ## Install Dependencies
