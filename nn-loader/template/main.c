@@ -61,8 +61,9 @@ __init liteflow_{{ model_uuid }}_model_init(void)
 
     {% if test_mode %}
     lf_activate_model({{ app_id }}, {{ model_uuid }});
+    
     // TODO
-    {% for input_pos in range(0, input_size) %}
+    {%- for input_pos in range(0, input_size) %}
     _input[{{ input_pos }}] = ... ;
     {%- endfor %}
 
