@@ -6,6 +6,13 @@ The key of LiteFlow is to provide predictable performance neural network for Lin
 
 [![Build Status](https://travis-ci.org/liteflow/liteflow.svg?branch=master)](https://travis-ci.org/liteflow/liteflow)
 
+## Clone the repo
+
+```
+git clone git@github.com:liteflow/liteflow.git
+
+```
+
 ## Install Dependencies
 
 1. Install using APT
@@ -21,26 +28,21 @@ pip3 install -r nn-loader/requirements.txt
 
 ## Building LiteFlow
 
-1. Clone the whole repo.
-
-```
-git clone git@github.com:liteflow/liteflow.git
-```
-
-2. Build LiteFlow
+1. Build LiteFlow
 
 ```
 make all
 ```
 
-3. Install kernel module
+2. Install kernel module
 
 ```
 make module_install
 ```
 to install LiteFlow general kernel.
 
-If you would like to use LiteFlow with TCP congestion control, you should also install LiteFlow TCP kernel.
+
+3. If you would like to use LiteFlow with TCP congestion control, you should also install LiteFlow TCP kernel.
 ```
 make tcp_kernel_install
 ```
@@ -52,6 +54,9 @@ make lib_install
 ```
 
 5. Install python library
+
+TBD
+
 
 6. Let's GO!!!
 
