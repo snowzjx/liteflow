@@ -90,18 +90,17 @@ def get_tensor_and_buffer(model, graph, input):
     tensor_type = tensor.Type()
     raw_buffer = model.Buffers(tensor.Buffer()).DataAsNumpy()
 
-    viewer = None
     if tensor_type == tflite.TensorType.FLOAT32:
-        type = np.float32 
+        viewer = '<f4'		
     elif tensor_type == tflite.TensorType.INT8:
-        type = np.int8 
+        viewer = '<i1'		
     elif tensor_type == tflite.TensorType.INT32:
-        type = np.int32 
+        viewer = '<i4'		
     else:
         raise Exception('Unsupported Tensor Type: %s ...' % tensor_type)
 
     if isinstance(raw_buffer, np.ndarray):
-        buffer = raw_buffer.astype(type)
+        buffer = raw_buffer.view(viewer)
     else:
         buffer = None
 
