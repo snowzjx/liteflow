@@ -13,37 +13,21 @@ static void quan_0_comp (s64 *input, s64 *output)
     // Q_min: 0.0
     // Q_max: 62.0
     
-    output[0] = (input[0] - 0) * 255 / (62 - 0) - 128;
-    // if (output[0] > 127) {
-    //     output[0] = 127;
-    // }
-    // if (output[0] < -128) {
-    //     output[0] = -128;
-    // }
+    output[0] = (input[0] - 0) * 255 / (62 - 0) - 128;    
+    printk(KERN_INFO "Output_quan_0_%d: %lld", 0, output[0]);
     
-    output[1] = (input[1] - 0) * 255 / (62 - 0) - 128;
-    // if (output[1] > 127) {
-    //     output[1] = 127;
-    // }
-    // if (output[1] < -128) {
-    //     output[1] = -128;
-    // }
     
-    output[2] = (input[2] - 0) * 255 / (62 - 0) - 128;
-    // if (output[2] > 127) {
-    //     output[2] = 127;
-    // }
-    // if (output[2] < -128) {
-    //     output[2] = -128;
-    // }
+    output[1] = (input[1] - 0) * 255 / (62 - 0) - 128;    
+    printk(KERN_INFO "Output_quan_0_%d: %lld", 1, output[1]);
     
-    output[3] = (input[3] - 0) * 255 / (62 - 0) - 128;
-    // if (output[3] > 127) {
-    //     output[3] = 127;
-    // }
-    // if (output[3] < -128) {
-    //     output[3] = -128;
-    // }
+    
+    output[2] = (input[2] - 0) * 255 / (62 - 0) - 128;    
+    printk(KERN_INFO "Output_quan_0_%d: %lld", 2, output[2]);
+    
+    
+    output[3] = (input[3] - 0) * 255 / (62 - 0) - 128;    
+    printk(KERN_INFO "Output_quan_0_%d: %lld", 3, output[3]);
+    
     
 }
 
@@ -59,69 +43,45 @@ struct model_layer layer_0 __read_mostly = {
 static void fc_1_comp (s64 *input, s64 *output)
 {
     
-    output[0] =input[0] * -13 + input[1] * 9 + input[2] * 19 + input[3] * -31+  -113;
-    // if (output[0] > 127) {
-    //     output[0] = 127;
-    // }
-    // if (output[0] < -128) {
-    //     output[0] = -128;
-    // }
+    output[0] =(input[0] + 128) * (-13 + 0) + (input[1] + 128) * (9 + 0) + (input[2] + 128) * (19 + 0) + (input[3] + 128) * (-31 + 0) + (-113);
+    output[0] = output[0] * 8896 / 1000000 + 24;
+    printk(KERN_INFO "Output_fc_1_%d: %lld", 0, output[0]);
+
     
-    output[1] =input[0] * -8 + input[1] * 12 + input[2] * 8 + input[3] * -39+  172;
-    // if (output[1] > 127) {
-    //     output[1] = 127;
-    // }
-    // if (output[1] < -128) {
-    //     output[1] = -128;
-    // }
+    output[1] =(input[0] + 128) * (-8 + 0) + (input[1] + 128) * (12 + 0) + (input[2] + 128) * (8 + 0) + (input[3] + 128) * (-39 + 0) + (172);
+    output[1] = output[1] * 8896 / 1000000 + 24;
+    printk(KERN_INFO "Output_fc_1_%d: %lld", 1, output[1]);
+
     
-    output[2] =input[0] * -38 + input[1] * -22 + input[2] * 49 + input[3] * -49+  236;
-    // if (output[2] > 127) {
-    //     output[2] = 127;
-    // }
-    // if (output[2] < -128) {
-    //     output[2] = -128;
-    // }
+    output[2] =(input[0] + 128) * (-38 + 0) + (input[1] + 128) * (-22 + 0) + (input[2] + 128) * (49 + 0) + (input[3] + 128) * (-49 + 0) + (236);
+    output[2] = output[2] * 8896 / 1000000 + 24;
+    printk(KERN_INFO "Output_fc_1_%d: %lld", 2, output[2]);
+
     
-    output[3] =input[0] * -12 + input[1] * 32 + input[2] * -8 + input[3] * 11+  147;
-    // if (output[3] > 127) {
-    //     output[3] = 127;
-    // }
-    // if (output[3] < -128) {
-    //     output[3] = -128;
-    // }
+    output[3] =(input[0] + 128) * (-12 + 0) + (input[1] + 128) * (32 + 0) + (input[2] + 128) * (-8 + 0) + (input[3] + 128) * (11 + 0) + (147);
+    output[3] = output[3] * 8896 / 1000000 + 24;
+    printk(KERN_INFO "Output_fc_1_%d: %lld", 3, output[3]);
+
     
-    output[4] =input[0] * -127 + input[1] * 2 + input[2] * 21 + input[3] * -9+  962;
-    // if (output[4] > 127) {
-    //     output[4] = 127;
-    // }
-    // if (output[4] < -128) {
-    //     output[4] = -128;
-    // }
+    output[4] =(input[0] + 128) * (-127 + 0) + (input[1] + 128) * (2 + 0) + (input[2] + 128) * (21 + 0) + (input[3] + 128) * (-9 + 0) + (962);
+    output[4] = output[4] * 8896 / 1000000 + 24;
+    printk(KERN_INFO "Output_fc_1_%d: %lld", 4, output[4]);
+
     
-    output[5] =input[0] * -1 + input[1] * -3 + input[2] * 46 + input[3] * 3+  396;
-    // if (output[5] > 127) {
-    //     output[5] = 127;
-    // }
-    // if (output[5] < -128) {
-    //     output[5] = -128;
-    // }
+    output[5] =(input[0] + 128) * (-1 + 0) + (input[1] + 128) * (-3 + 0) + (input[2] + 128) * (46 + 0) + (input[3] + 128) * (3 + 0) + (396);
+    output[5] = output[5] * 8896 / 1000000 + 24;
+    printk(KERN_INFO "Output_fc_1_%d: %lld", 5, output[5]);
+
     
-    output[6] =input[0] * -42 + input[1] * -22 + input[2] * -20 + input[3] * 6+  198;
-    // if (output[6] > 127) {
-    //     output[6] = 127;
-    // }
-    // if (output[6] < -128) {
-    //     output[6] = -128;
-    // }
+    output[6] =(input[0] + 128) * (-42 + 0) + (input[1] + 128) * (-22 + 0) + (input[2] + 128) * (-20 + 0) + (input[3] + 128) * (6 + 0) + (198);
+    output[6] = output[6] * 8896 / 1000000 + 24;
+    printk(KERN_INFO "Output_fc_1_%d: %lld", 6, output[6]);
+
     
-    output[7] =input[0] * 15 + input[1] * -5 + input[2] * -55 + input[3] * 27+  -357;
-    // if (output[7] > 127) {
-    //     output[7] = 127;
-    // }
-    // if (output[7] < -128) {
-    //     output[7] = -128;
-    // }
+    output[7] =(input[0] + 128) * (15 + 0) + (input[1] + 128) * (-5 + 0) + (input[2] + 128) * (-55 + 0) + (input[3] + 128) * (27 + 0) + (-357);
+    output[7] = output[7] * 8896 / 1000000 + 24;
+    printk(KERN_INFO "Output_fc_1_%d: %lld", 7, output[7]);
+
     
 }
 
@@ -137,13 +97,10 @@ struct model_layer layer_1 __read_mostly = {
 static void fc_2_comp (s64 *input, s64 *output)
 {
     
-    output[0] =input[0] * 31 + input[1] * -75 + input[2] * -127 + input[3] * -114 + input[4] * -24 + input[5] * -21 + input[6] * -48 + input[7] * 97+  -253;
-    // if (output[0] > 127) {
-    //     output[0] = 127;
-    // }
-    // if (output[0] < -128) {
-    //     output[0] = -128;
-    // }
+    output[0] =(input[0] + -24) * (31 + 0) + (input[1] + -24) * (-75 + 0) + (input[2] + -24) * (-127 + 0) + (input[3] + -24) * (-114 + 0) + (input[4] + -24) * (-24 + 0) + (input[5] + -24) * (-21 + 0) + (input[6] + -24) * (-48 + 0) + (input[7] + -24) * (97 + 0) + (-253);
+    output[0] = output[0] * 20483 / 1000000 + -128;
+    printk(KERN_INFO "Output_fc_2_%d: %lld", 0, output[0]);
+
     
 }
 
@@ -220,10 +177,10 @@ __init liteflow_2333_model_init(void)
     lf_activate_model(1, 2333);
     
     // TODO
-    _input[0] = 10 ;
-    _input[1] = 20 ;
-    _input[2] = 30 ;
-    _input[3] = 40 ;
+    _input[0] = 20 ;
+    _input[1] = 30 ;
+    _input[2] = 40 ;
+    _input[3] = 50 ;
 
     lf_query_model(1, _input, _output);
 

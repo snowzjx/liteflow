@@ -32,9 +32,10 @@ def tflite_loader(path, uuid, appid, export, test):
             input_tensor, input_buffer = get_tensor_and_buffer(model, graph, op.Inputs(0))
             weight_tensor, weight_buffer = get_tensor_and_buffer(model, graph, op.Inputs(1))
             bias_tensor, bias_buffer = get_tensor_and_buffer(model, graph, op.Inputs(2))
+            output_tensor, output_buffer = get_tensor_and_buffer(model, graph, op.Outputs(0))
 
-            layer = FCLayer(op_code, input_tensor, weight_tensor, bias_tensor,
-                                        input_buffer, weight_buffer, bias_buffer)
+            layer = FCLayer(op_code, input_tensor, weight_tensor, bias_tensor, output_tensor,
+                                        input_buffer, weight_buffer, bias_buffer, output_buffer)
             layer_list.append(layer)
 
         elif op_code.BuiltinCode() == tflite.BuiltinOperator.TANH:
