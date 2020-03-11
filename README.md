@@ -15,6 +15,7 @@ apt install -y build-essential libnl-3-dev libnl-genl-3-dev pkg-config linux-hea
 
 2. Install using pip3
 ```
+pip3 install -U pip
 pip3 install -r nn-loader/requirements.txt
 ```
 
