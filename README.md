@@ -6,6 +6,18 @@ The key of LiteFlow is to provide predictable performance neural network for Lin
 
 [![Build Status](https://travis-ci.org/liteflow/liteflow.svg?branch=master)](https://travis-ci.org/liteflow/liteflow)
 
+## Install Dependencies
+
+1. Install using APT
+```
+apt install -y build-essential libnl-3-dev libnl-genl-3-dev pkg-config linux-headers-generic python3 python3-pip 
+```
+
+2. Install using pip3
+```
+pip3 install -r nn-loader/requirements.txt
+```
+
 ## Building LiteFlow
 
 1. Clone the whole repo.
