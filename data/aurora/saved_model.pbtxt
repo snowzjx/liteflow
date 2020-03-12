@@ -46241,7 +46241,7 @@ meta_graphs {
       outputs {
         key: "act"
         value {
-          name: "model/split:0"
+          name: "model/pi/add:0"
           dtype: DT_FLOAT
           tensor_shape {
             dim {
