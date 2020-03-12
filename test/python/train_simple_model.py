@@ -10,7 +10,8 @@ dataset_x = np.array([
     [21, 32, 41, 51],
     [33, 43, 53, 62],
     [41, 50, 60, 60],
-    [11, 31, 21, 41],
+    [20, 29, 39, 53],
+    # [11, 31, 21, 41],
 ]).astype(np.float32)
 
 os.system("mkdir -p /tmp/simple_model/")
@@ -21,8 +22,7 @@ dataset_y = np.array([10.0, 20.0, 30.0, 30.0, 20.0])
 
 model = tf.keras.models.Sequential([
   tf.keras.layers.Input(shape=(4,)),
-  # tf.keras.layers.Dense(8, activation='tanh'),
-  tf.keras.layers.Dense(8),
+  tf.keras.layers.Dense(8, activation='tanh'),
   tf.keras.layers.Dense(1)
 ])
 
