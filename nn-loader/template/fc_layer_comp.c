@@ -6,8 +6,7 @@ static void fc_{{ prefix }}_comp (s64 *input, s64 *output)
             (input[{{ j }}] + {{ input_offset }}) * ({{ weights[i][j] }} + {{ weight_offset }})
             {%- if not loop.last %} + {% endif -%}
         {%- endfor %} + ({{ bias[i] }});
-    output[{{ i }}] = output[{{ i }}] * {{ multiplier }} / 1000000 + {{ output_offset }};
-
+    output[{{ i }}] = ((output[{{ i }}] * {{ mantissa_numerator | int }} / {{ mantissa_denominator | int }}) {% if exponent > 0 %} << {{ exponent | int }}{% else %} >> -({{ exponent | int }}){% endif %}) + {{ output_offset }};
     printk(KERN_INFO "Output_fc_{{ prefix }}_%d: %lld", {{ i }}, output[{{ i }}]);
 
     {% endfor %}
