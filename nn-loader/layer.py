@@ -12,7 +12,7 @@ class Layer:
     def generate_struct_code(self, prefix):
         raise NotImplementedError
     
-    def generate_comp_code(self, prefix):
+    def generate_comp_code(self, prefix, test_mode):
         raise NotImplementedError
 
 class FCLayer(Layer):
@@ -61,7 +61,7 @@ class FCLayer(Layer):
                                 output_size = self.output_size)
         return code
 
-    def generate_comp_code(self, prefix):
+    def generate_comp_code(self, prefix, test_mode):
         TEMPLATE_FILE = "fc_layer_comp.c"
         _template = template.get_template(TEMPLATE_FILE)
         code = _template.render(prefix=prefix,
@@ -74,7 +74,8 @@ class FCLayer(Layer):
                                 output_offset = self.output_offset,
                                 mantissa_numerator = self.mantissa_numerator,
                                 mantissa_denominator = self.mantissa_denominator,
-                                exponent = self.exponent)
+                                exponent = self.exponent,
+                                test_mode = test_mode)
         return code
 
 class TanhLayer(Layer):
@@ -115,7 +116,7 @@ class TanhLayer(Layer):
                                 output_size = self.output_size)
         return code
 
-    def generate_comp_code(self, prefix):
+    def generate_comp_code(self, prefix, test_mode):
         TEMPLATE_FILE = "tanh_layer_comp.c"
         _template = template.get_template(TEMPLATE_FILE)
         code = _template.render(prefix=prefix,
@@ -124,7 +125,8 @@ class TanhLayer(Layer):
                                 input_offset = self.input_offset,
                                 output_offset = self.output_offset,
                                 input_scale = self.input_scale,
-                                output_scale = self.output_scale)
+                                output_scale = self.output_scale,
+                                test_mode = test_mode)
         return code
 
 class QuanLayer(Layer):
@@ -159,7 +161,7 @@ class QuanLayer(Layer):
                                 output_size = self.output_size)
         return code
 
-    def generate_comp_code(self, prefix):
+    def generate_comp_code(self, prefix, test_mode):
         TEMPLATE_FILE = "quan_layer_comp.c"
         _template = template.get_template(TEMPLATE_FILE)
         code = _template.render(prefix=prefix,
@@ -167,7 +169,8 @@ class QuanLayer(Layer):
                                 output_size = self.output_size,
                                 q_min = self.q_min,
                                 q_max = self.q_max,
-                                zero_point = self.zero_point)
+                                zero_point = self.zero_point,
+                                test_mode = test_mode)
         return code
 
 class DeQuanLayer(Layer):
@@ -199,14 +202,15 @@ class DeQuanLayer(Layer):
                                 output_size = self.output_size)
         return code
 
-    def generate_comp_code(self, prefix):
+    def generate_comp_code(self, prefix, test_mode):
         TEMPLATE_FILE = "dequan_layer_comp.c"
         _template = template.get_template(TEMPLATE_FILE)
         code = _template.render(prefix=prefix,
                                 input_size = self.input_size,
                                 output_size = self.output_size,
                                 q_min = self.q_min,
-                                q_max = self.q_max)
+                                q_max = self.q_max,
+                                test_mode = test_mode)
         return code
 
 class ConcatenationLayer(Layer):
