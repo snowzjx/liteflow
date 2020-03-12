@@ -32,9 +32,10 @@ def tflite_loader(path, uuid, appid, export, test):
             input_tensor, input_buffer = get_tensor_and_buffer(model, graph, op.Inputs(0))
             weight_tensor, weight_buffer = get_tensor_and_buffer(model, graph, op.Inputs(1))
             bias_tensor, bias_buffer = get_tensor_and_buffer(model, graph, op.Inputs(2))
+            output_tensor, output_buffer = get_tensor_and_buffer(model, graph, op.Outputs(0))
 
-            layer = FCLayer(op_code, input_tensor, weight_tensor, bias_tensor,
-                                        input_buffer, weight_buffer, bias_buffer)
+            layer = FCLayer(op_code, input_tensor, weight_tensor, bias_tensor, output_tensor,
+                                        input_buffer, weight_buffer, bias_buffer, output_buffer)
             layer_list.append(layer)
 
         elif op_code.BuiltinCode() == tflite.BuiltinOperator.TANH:
@@ -90,18 +91,17 @@ def get_tensor_and_buffer(model, graph, input):
     tensor_type = tensor.Type()
     raw_buffer = model.Buffers(tensor.Buffer()).DataAsNumpy()
 
-    viewer = None
     if tensor_type == tflite.TensorType.FLOAT32:
-        type = np.float32 
+        viewer = '<f4'		
     elif tensor_type == tflite.TensorType.INT8:
-        type = np.int8 
+        viewer = '<i1'		
     elif tensor_type == tflite.TensorType.INT32:
-        type = np.int32 
+        viewer = '<i4'		
     else:
         raise Exception('Unsupported Tensor Type: %s ...' % tensor_type)
 
     if isinstance(raw_buffer, np.ndarray):
-        buffer = raw_buffer.astype(type)
+        buffer = raw_buffer.view(viewer)
     else:
         buffer = None
 
