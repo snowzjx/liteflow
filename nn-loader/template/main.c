@@ -6,6 +6,10 @@
 
 #include "linux/liteflow.h"
 
+{% for header in extra_include_list %}
+#include "linux/{{ header }}"
+{% endfor %}
+
 {% for layer_id in range(0, layer_list|length) %}
 /************************************** Layer {{ layer_id }} **************************************/
 {{ layer_list[layer_id].generate_comp_code(layer_id) }}

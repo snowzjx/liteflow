@@ -10,10 +10,10 @@ class Layer:
         self.op = op
 
     def generate_struct_code(self, prefix):
-        pass
+        raise NotImplementedError
     
     def generate_comp_code(self, prefix):
-        pass
+        raise NotImplementedError
 
 class FCLayer(Layer):
     weights = None 
@@ -79,6 +79,11 @@ class FCLayer(Layer):
 
 class TanhLayer(Layer):
     
+    input_offset = 0
+    output_offset = 0
+    input_scale = 0
+    output_scale = 0
+    
     def __init__(self, op, input_tensor, output_tensor, 
                             input_buffer, output_buffer):
         super().__init__(op)
@@ -93,11 +98,34 @@ class TanhLayer(Layer):
         self.input_size = input_tensor.Shape(1)
         self.output_size = output_tensor.Shape(1)
 
+        self.input_scale = input_tensor.Quantization().Scale(0)
+        self.output_scale = output_tensor.Quantization().Scale(0)
+
+        # TODO Check
+        self.input_offset = -input_tensor.Quantization().ZeroPoint(0)
+        self.output_offset = output_tensor.Quantization().ZeroPoint(0)
+
+
     def generate_struct_code(self, prefix):
-        return '// TODO Tanh layer'
+        TEMPLATE_FILE = "tanh_layer_struct.c"
+        _template = template.get_template(TEMPLATE_FILE)
+        code = _template.render(prefix = prefix,
+                                uuid = prefix, 
+                                input_size = self.input_size,
+                                output_size = self.output_size)
+        return code
 
     def generate_comp_code(self, prefix):
-        return '// TODO Tanh layer'
+        TEMPLATE_FILE = "tanh_layer_comp.c"
+        _template = template.get_template(TEMPLATE_FILE)
+        code = _template.render(prefix=prefix,
+                                input_size = self.input_size,
+                                output_size = self.output_size,
+                                input_offset = self.input_offset,
+                                output_offset = self.output_offset,
+                                input_scale = self.input_scale,
+                                output_scale = self.output_scale)
+        return code
 
 class QuanLayer(Layer):
 

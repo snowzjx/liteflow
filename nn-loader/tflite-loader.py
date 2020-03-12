@@ -24,6 +24,7 @@ def tflite_loader(path, uuid, appid, export, test):
     graph = model.Subgraphs(0)
     num_ops = graph.OperatorsLength()
     layer_list = []
+    extra_include_list = []
     for op_index in range(0, num_ops):
         op = graph.Operators(op_index)
         op_code = model.OperatorCodes(op.OpcodeIndex())
@@ -46,6 +47,7 @@ def tflite_loader(path, uuid, appid, export, test):
 
             layer = TanhLayer(op_code, input_tensor, output_tensor, input_buffer, output_buffer)
             layer_list.append(layer)
+            extra_include_list.append('tanh_lookup_table.h')
 
         
         elif op_code.BuiltinCode() == tflite.BuiltinOperator.QUANTIZE:
@@ -80,6 +82,7 @@ def tflite_loader(path, uuid, appid, export, test):
                             layer_list = layer_list,
                             input_size = model_input_size,
                             output_size = model_output_size,
+                            extra_include_list = extra_include_list,
                             test_mode = test)
 
     OUTPUT_FILE = f"{export}/lf_model_{uuid}.c"

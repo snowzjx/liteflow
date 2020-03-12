@@ -7,6 +7,10 @@
 #include "linux/liteflow.h"
 
 
+#include "linux/tanh_lookup_table.h"
+
+
+
 /************************************** Layer 0 **************************************/
 static void quan_0_comp (s64 *input, s64 *output)
 {
@@ -43,43 +47,43 @@ struct model_layer layer_0 __read_mostly = {
 static void fc_1_comp (s64 *input, s64 *output)
 {
     
-    output[0] =(input[0] + 128) * (-13 + 0) + (input[1] + 128) * (9 + 0) + (input[2] + 128) * (19 + 0) + (input[3] + 128) * (-31 + 0) + (-113);
-    output[0] = output[0] * 8896 / 1000000 + 24;
+    output[0] =(input[0] + 128) * (-18 + 0) + (input[1] + 128) * (27 + 0) + (input[2] + 128) * (-28 + 0) + (input[3] + 128) * (-60 + 0) + (0);
+    output[0] = output[0] * 5001 / 1000000 + 15;
     printk(KERN_INFO "Output_fc_1_%d: %lld", 0, output[0]);
 
     
-    output[1] =(input[0] + 128) * (-8 + 0) + (input[1] + 128) * (12 + 0) + (input[2] + 128) * (8 + 0) + (input[3] + 128) * (-39 + 0) + (172);
-    output[1] = output[1] * 8896 / 1000000 + 24;
+    output[1] =(input[0] + 128) * (-1 + 0) + (input[1] + 128) * (23 + 0) + (input[2] + 128) * (29 + 0) + (input[3] + 128) * (43 + 0) + (0);
+    output[1] = output[1] * 5001 / 1000000 + 15;
     printk(KERN_INFO "Output_fc_1_%d: %lld", 1, output[1]);
 
     
-    output[2] =(input[0] + 128) * (-38 + 0) + (input[1] + 128) * (-22 + 0) + (input[2] + 128) * (49 + 0) + (input[3] + 128) * (-49 + 0) + (236);
-    output[2] = output[2] * 8896 / 1000000 + 24;
+    output[2] =(input[0] + 128) * (-85 + 0) + (input[1] + 128) * (32 + 0) + (input[2] + 128) * (1 + 0) + (input[3] + 128) * (-22 + 0) + (-14);
+    output[2] = output[2] * 5001 / 1000000 + 15;
     printk(KERN_INFO "Output_fc_1_%d: %lld", 2, output[2]);
 
     
-    output[3] =(input[0] + 128) * (-12 + 0) + (input[1] + 128) * (32 + 0) + (input[2] + 128) * (-8 + 0) + (input[3] + 128) * (11 + 0) + (147);
-    output[3] = output[3] * 8896 / 1000000 + 24;
+    output[3] =(input[0] + 128) * (-127 + 0) + (input[1] + 128) * (-27 + 0) + (input[2] + 128) * (38 + 0) + (input[3] + 128) * (44 + 0) + (629);
+    output[3] = output[3] * 5001 / 1000000 + 15;
     printk(KERN_INFO "Output_fc_1_%d: %lld", 3, output[3]);
 
     
-    output[4] =(input[0] + 128) * (-127 + 0) + (input[1] + 128) * (2 + 0) + (input[2] + 128) * (21 + 0) + (input[3] + 128) * (-9 + 0) + (962);
-    output[4] = output[4] * 8896 / 1000000 + 24;
+    output[4] =(input[0] + 128) * (19 + 0) + (input[1] + 128) * (-54 + 0) + (input[2] + 128) * (-34 + 0) + (input[3] + 128) * (79 + 0) + (19);
+    output[4] = output[4] * 5001 / 1000000 + 15;
     printk(KERN_INFO "Output_fc_1_%d: %lld", 4, output[4]);
 
     
-    output[5] =(input[0] + 128) * (-1 + 0) + (input[1] + 128) * (-3 + 0) + (input[2] + 128) * (46 + 0) + (input[3] + 128) * (3 + 0) + (396);
-    output[5] = output[5] * 8896 / 1000000 + 24;
+    output[5] =(input[0] + 128) * (16 + 0) + (input[1] + 128) * (73 + 0) + (input[2] + 128) * (-19 + 0) + (input[3] + 128) * (-27 + 0) + (-174);
+    output[5] = output[5] * 5001 / 1000000 + 15;
     printk(KERN_INFO "Output_fc_1_%d: %lld", 5, output[5]);
 
     
-    output[6] =(input[0] + 128) * (-42 + 0) + (input[1] + 128) * (-22 + 0) + (input[2] + 128) * (-20 + 0) + (input[3] + 128) * (6 + 0) + (198);
-    output[6] = output[6] * 8896 / 1000000 + 24;
+    output[6] =(input[0] + 128) * (64 + 0) + (input[1] + 128) * (83 + 0) + (input[2] + 128) * (7 + 0) + (input[3] + 128) * (-63 + 0) + (-194);
+    output[6] = output[6] * 5001 / 1000000 + 15;
     printk(KERN_INFO "Output_fc_1_%d: %lld", 6, output[6]);
 
     
-    output[7] =(input[0] + 128) * (15 + 0) + (input[1] + 128) * (-5 + 0) + (input[2] + 128) * (-55 + 0) + (input[3] + 128) * (27 + 0) + (-357);
-    output[7] = output[7] * 8896 / 1000000 + 24;
+    output[7] =(input[0] + 128) * (41 + 0) + (input[1] + 128) * (22 + 0) + (input[2] + 128) * (-80 + 0) + (input[3] + 128) * (-81 + 0) + (0);
+    output[7] = output[7] * 5001 / 1000000 + 15;
     printk(KERN_INFO "Output_fc_1_%d: %lld", 7, output[7]);
 
     
@@ -94,41 +98,91 @@ struct model_layer layer_1 __read_mostly = {
 /************************************ End Layer 1 ************************************/
 
 /************************************** Layer 2 **************************************/
-static void fc_2_comp (s64 *input, s64 *output)
+static void tanh_2_comp (s64 *input, s64 *output)
 {
+    // Input Scale: 0.4137493968009949
+    // Output Scale: 0.0078125
+    // Input Offset: -15
+    // Output Offset: 0
     
-    output[0] =(input[0] + -24) * (31 + 0) + (input[1] + -24) * (-75 + 0) + (input[2] + -24) * (-127 + 0) + (input[3] + -24) * (-114 + 0) + (input[4] + -24) * (-24 + 0) + (input[5] + -24) * (-21 + 0) + (input[6] + -24) * (-48 + 0) + (input[7] + -24) * (97 + 0) + (-253);
-    output[0] = output[0] * 20483 / 1000000 + -128;
-    printk(KERN_INFO "Output_fc_2_%d: %lld", 0, output[0]);
-
+    output[0] = lf_tanh((input_size[0] + -15) * TANH_X_SCALE_UP * /* input_scale */ ）/ TANH_X_SCALE_UP / /* output_scale */;    
+    printk(KERN_INFO "Output_tanh_2_%d: %lld", 0, output[0]);
+    
+    
+    output[1] = lf_tanh((input_size[1] + -15) * TANH_X_SCALE_UP * /* input_scale */ ）/ TANH_X_SCALE_UP / /* output_scale */;    
+    printk(KERN_INFO "Output_tanh_2_%d: %lld", 1, output[1]);
+    
+    
+    output[2] = lf_tanh((input_size[2] + -15) * TANH_X_SCALE_UP * /* input_scale */ ）/ TANH_X_SCALE_UP / /* output_scale */;    
+    printk(KERN_INFO "Output_tanh_2_%d: %lld", 2, output[2]);
+    
+    
+    output[3] = lf_tanh((input_size[3] + -15) * TANH_X_SCALE_UP * /* input_scale */ ）/ TANH_X_SCALE_UP / /* output_scale */;    
+    printk(KERN_INFO "Output_tanh_2_%d: %lld", 3, output[3]);
+    
+    
+    output[4] = lf_tanh((input_size[4] + -15) * TANH_X_SCALE_UP * /* input_scale */ ）/ TANH_X_SCALE_UP / /* output_scale */;    
+    printk(KERN_INFO "Output_tanh_2_%d: %lld", 4, output[4]);
+    
+    
+    output[5] = lf_tanh((input_size[5] + -15) * TANH_X_SCALE_UP * /* input_scale */ ）/ TANH_X_SCALE_UP / /* output_scale */;    
+    printk(KERN_INFO "Output_tanh_2_%d: %lld", 5, output[5]);
+    
+    
+    output[6] = lf_tanh((input_size[6] + -15) * TANH_X_SCALE_UP * /* input_scale */ ）/ TANH_X_SCALE_UP / /* output_scale */;    
+    printk(KERN_INFO "Output_tanh_2_%d: %lld", 6, output[6]);
+    
+    
+    output[7] = lf_tanh((input_size[7] + -15) * TANH_X_SCALE_UP * /* input_scale */ ）/ TANH_X_SCALE_UP / /* output_scale */;    
+    printk(KERN_INFO "Output_tanh_2_%d: %lld", 7, output[7]);
+    
     
 }
 
 struct model_layer layer_2 __read_mostly = {
     .uuid = 2,
     .input_size = 8,
-    .output_size = 1,
-    .comp_func = fc_2_comp,
+    .output_size = 8,
+    .comp_func = tanh_2_comp,
 };
 /************************************ End Layer 2 ************************************/
 
 /************************************** Layer 3 **************************************/
-static void dequan_3_comp (s64 *input, s64 *output)
+static void fc_3_comp (s64 *input, s64 *output)
 {
-    // Q_min: 0.0
-    // Q_max: 30.02955436706543
     
-    output[0] = (input[0] + 128) * 30 / 255 + 0;
+    output[0] =(input[0] + 0) * (-78 + 0) + (input[1] + 0) * (88 + 0) + (input[2] + 0) * (-77 + 0) + (input[3] + 0) * (-127 + 0) + (input[4] + 0) * (91 + 0) + (input[5] + 0) * (92 + 0) + (input[6] + 0) * (87 + 0) + (input[7] + 0) * (-59 + 0) + (9390);
+    output[0] = output[0] * 2579 / 1000000 + -128;
+    printk(KERN_INFO "Output_fc_3_%d: %lld", 0, output[0]);
+
     
 }
 
 struct model_layer layer_3 __read_mostly = {
     .uuid = 3,
-    .input_size = 1,
+    .input_size = 8,
     .output_size = 1,
-    .comp_func = dequan_3_comp,
+    .comp_func = fc_3_comp,
 };
 /************************************ End Layer 3 ************************************/
+
+/************************************** Layer 4 **************************************/
+static void dequan_4_comp (s64 *input, s64 *output)
+{
+    // Q_min: 0.0
+    // Q_max: 29.955455780029297
+    
+    output[0] = (input[0] + 128) * 29 / 255 + 0;
+    
+}
+
+struct model_layer layer_4 __read_mostly = {
+    .uuid = 4,
+    .input_size = 1,
+    .output_size = 1,
+    .comp_func = dequan_4_comp,
+};
+/************************************ End Layer 4 ************************************/
 
 
 /************************************** Model  **************************************/
@@ -140,23 +194,10 @@ struct model_container model_2333 __read_mostly = {
 };
 
 
-/******************************************** Test Mode ********************************************/
-struct app app = {
-    .appid = 1,
-    .input_size = 4,
-    .output_size = 1,
-};
-
-/**************************************** End Test Mode ********************************************/
-
 
 static int
 __init liteflow_2333_model_init(void)
 {
-    
-    s64 _input[4];
-    s64 _output[1];
-    int _output_pos;
     
 
     // Construct layers
@@ -165,28 +206,12 @@ __init liteflow_2333_model_init(void)
     list_add(&layer_1.list, &layer_0.list);
     list_add(&layer_2.list, &layer_1.list);
     list_add(&layer_3.list, &layer_2.list);
+    list_add(&layer_4.list, &layer_3.list);
 
-    
-    // Test mode = on
-    lf_register_app(&app);
     
     
     lf_register_model(1, &model_2333);
 
-    
-    lf_activate_model(1, 2333);
-    
-    // TODO
-    _input[0] = 11 ;
-    _input[1] = 31 ;
-    _input[2] = 21 ;
-    _input[3] = 41 ;
-
-    lf_query_model(1, _input, _output);
-
-    for (_output_pos = 0; _output_pos < 1; ++_output_pos) {
-        printk(KERN_INFO "Output_%d: %lld\n", _output_pos, _output[_output_pos]);
-    }
     
 
     return 0;
@@ -197,9 +222,6 @@ __exit liteflow_2333_model_exit(void)
 {
     lf_unregister_model(1, 2333);
 
-    
-    // Test mode = on
-    lf_unregister_app(1);
     
 }
 
