@@ -1,3 +1,4 @@
+from math import frexp
 import template
 
 class Layer:
@@ -49,6 +50,7 @@ class FCLayer(Layer):
         input_product_scale = input_tensor.Quantization().Scale(0) * weight_tensor.Quantization().Scale(0)
         # TODO Need to fix it soon 
         self.multiplier = int(input_product_scale /  output_tensor.Quantization().Scale(0) * 1000000)
+
     
     def generate_struct_code(self, prefix):
         TEMPLATE_FILE = "fc_layer_struct.c"
@@ -184,3 +186,16 @@ class ConcatenationLayer(Layer):
 class SplitLayer(Layer):
     # TODO
     pass
+
+
+def get_quan_multiplier(multiplier):
+    # Return tuple (numerator, denominator, exponent)
+    # 'numerator' and 'denominator' form the mantissa, where 'mantissa = numerator / denominator'
+    # 'multiplier = mantissa * 2**exponent'
+
+    # Keep four digits after decimal point
+    precision = 4
+
+    m, e = frexp(multiplier)
+    fm = m * 10**precision
+    return int(fm), int(10**precision), int(e)
