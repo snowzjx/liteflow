@@ -1,6 +1,9 @@
 from math import frexp
 import template
 
+# Keep four digits after decimal point
+KERNEL_PRECISION = 4
+
 class Layer:
     op = None 
     input_size = 0
@@ -119,13 +122,17 @@ class TanhLayer(Layer):
     def generate_comp_code(self, prefix, test_mode):
         TEMPLATE_FILE = "tanh_layer_comp.c"
         _template = template.get_template(TEMPLATE_FILE)
+        input_scale_numerator, input_scale_denominator = fractionation(self.input_scale)
+        output_scale_numerator, output_scale_denominator = fractionation(self.output_scale)
         code = _template.render(prefix=prefix,
                                 input_size = self.input_size,
                                 output_size = self.output_size,
                                 input_offset = self.input_offset,
                                 output_offset = self.output_offset,
-                                input_scale = self.input_scale,
-                                output_scale = self.output_scale,
+                                input_scale_numerator = input_scale_numerator,
+                                input_scale_denominator = input_scale_denominator,
+                                output_scale_numerator = output_scale_numerator,
+                                output_scale_denominator = output_scale_denominator,
                                 test_mode = test_mode)
         return code
 
@@ -222,14 +229,14 @@ class SplitLayer(Layer):
     pass
 
 
+def fractionation(float_num):
+    return int(float_num * 10**KERNEL_PRECISION), int(10**KERNEL_PRECISION)
+
 def get_quan_multiplier(multiplier):
     # Return tuple (numerator, denominator, exponent)
     # 'numerator' and 'denominator' form the mantissa, where 'mantissa = numerator / denominator'
     # 'multiplier = mantissa * 2**exponent'
 
-    # Keep four digits after decimal point
-    precision = 4
-
     m, e = frexp(multiplier)
-    fm = m * 10**precision
-    return int(fm), int(10**precision), int(e)
+    numerator, denominator = fractionation(m)
+    return numerator, denominator, int(e)
