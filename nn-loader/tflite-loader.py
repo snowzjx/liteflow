@@ -47,7 +47,9 @@ def tflite_loader(path, uuid, appid, export, test):
 
             layer = TanhLayer(op_code, input_tensor, output_tensor, input_buffer, output_buffer)
             layer_list.append(layer)
-            extra_include_list.append('tanh_lookup_table.h')
+            
+            if 'tanh_lookup_table.h' not in extra_include_list:
+                extra_include_list.append('tanh_lookup_table.h')
 
         
         elif op_code.BuiltinCode() == tflite.BuiltinOperator.QUANTIZE:
