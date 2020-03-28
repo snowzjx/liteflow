@@ -94,29 +94,55 @@ static inline int report_to_user(s64 *nn_input, u32 input_size) {
     return LF_SUCCS;
 }
 
+// kernel version == 4.14.0
 static inline int load_metric(struct lf_tcp_internal *ca, struct tcp_sock *tp, const struct rate_sample *rs) {
     
     struct lf_tcp_metric* metric;
+    u64 rin = 0, rout = 0;
+    u64 ack_us = 0, snd_us = 0;
+    int i;
     
     int measured_valid_rate = rate_sample_valid(rs);
     if (measured_valid_rate != 0) {
         return LF_ERROR;
     }
+        
+    if (rs->rtt_us > 0
+        && (ca->global_stats[GLOBAL_STATS_POS_MIN_RTT_US] == -1 
+        || ca->global_stats[GLOBAL_STATS_POS_MIN_RTT_US] > rs->rtt_us))
+    {
+        ca->global_stats[GLOBAL_STATS_POS_MIN_RTT_US] = rs->rtt_us;
+    }
     
     metric = &(ca->metrics[ca->current_pointer]);
 
-    // kernel version == 4.15.0
-    // compatible to most of versions
-    metric->values[INPUT_METRICS_POS_RTT_SAMPLE_US] = rs->rtt_us;
-    metric->values[INPUT_METRICS_POS_DELIVERED] = rs->delivered;
-    metric->values[INPUT_METRICS_POS_INTERVAL_US] = rs->interval_us;
-    metric->values[INPUT_METRICS_POS_RATE_OUTGOING] = (s64) rs->delivered * tp->mss_cache * S_TO_US;
-    do_div(metric->values[INPUT_METRICS_POS_RATE_OUTGOING], rs->interval_us);
+    metric->values[INPUT_METRICS_POS_SENT_LAT_INFLACTION] = 0;
+    if (ca->global_stats[GLOBAL_STATS_POS_MIN_RTT_US] > 0) {
+        metric->values[INPUT_METRICS_POS_LAT_RATIO] = INPUT_SCALE * rs->rtt_us; 
+        do_div(metric->values[INPUT_METRICS_POS_LAT_RATIO], ca->global_stats[GLOBAL_STATS_POS_MIN_RTT_US]);
+    }
+    else {
+        metric->values[INPUT_METRICS_POS_LAT_RATIO] = INPUT_SCALE * 1;
+    }
     
-    if (ca->global_stats[GLOBAL_STATS_POS_MIN_RTT_US] == -1 
-        || ca->global_stats[GLOBAL_STATS_POS_MIN_RTT_US] > rs->rtt_us) 
-    {
-        ca->global_stats[GLOBAL_STATS_POS_MIN_RTT_US] = rs->rtt_us;
+
+    ack_us = tcp_stamp_us_delta(tp->tcp_mstamp, rs->prior_mstamp);
+    for (i = 0; i < MAX_SKB_STORED; ++i) {
+        if (ca->skb_array[i].first_tx_mstamp == tp->first_tx_mstamp) {
+            snd_us = ca->skb_array[i].interval_us;
+            break;
+        }
+    }
+
+    if (ack_us != 0 && snd_us != 0) {
+        rin = rout = (s64) rs->delivered * tp->mss_cache * S_TO_US;
+        do_div(rin, snd_us);
+        do_div(rout, ack_us);
+        metric->values[INPUT_METRICS_POS_SNED_RATIO] = INPUT_SCALE * rin;
+        do_div(metric->values[INPUT_METRICS_POS_SNED_RATIO], rout);
+    }
+    else {
+        metric->values[INPUT_METRICS_POS_SNED_RATIO] = INPUT_SCALE * 1;
     }
 
     return LF_SUCCS;
@@ -201,10 +227,10 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
     
     // prepare input vector
     // TODO performance is not good
-    for (global_stats_pos = 0; global_stats_pos < NUM_OF_GLOBAL_STATS; ++global_stats_pos) {
-        nn_input[pos] = ca->global_stats[global_stats_pos];
-        pos++;
-    }
+    // for (global_stats_pos = 0; global_stats_pos < NUM_OF_GLOBAL_STATS; ++global_stats_pos) {
+    //     nn_input[pos] = ca->global_stats[global_stats_pos];
+    //     pos++;
+    // }
 
     for (metric_pos = 0; metric_pos < HISTORY_LEN; ++metric_pos) {
         for (value_pos = 0; value_pos < NUM_OF_INPUT_METRICS; ++value_pos) {
@@ -254,15 +280,15 @@ static void lf_tcp_conn_in_ack_event(struct sock *sk, u32 flags)
 
     ca->last_snd_una = tp->snd_una;
 
-    ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_BYTES_ACKED] = acked_bytes;
-    ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_PACKETS_ACKED] = acked_packets;
-    if (flags & CA_ACK_ECE) {
-        ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_BYTES] = acked_bytes;
-        ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_PACKETS] = acked_packets;
-    } else {
-        ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_BYTES] = 0;
-        ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_PACKETS] = 0;
-    }
+    // ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_BYTES_ACKED] = acked_bytes;
+    // ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_PACKETS_ACKED] = acked_packets;
+    // if (flags & CA_ACK_ECE) {
+    //     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_BYTES] = acked_bytes;
+    //     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_PACKETS] = acked_packets;
+    // } else {
+    //     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_BYTES] = 0;
+    //     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_PACKETS] = 0;
+    // }
 }
 
 
