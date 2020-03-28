@@ -17,6 +17,9 @@ class Layer:
     
     def generate_comp_code(self, prefix, test_mode):
         raise NotImplementedError
+    
+    def get_comp_func_name(self, prefix):
+        raise NotImplementedError
 
 class FCLayer(Layer):
     weights = None 
@@ -80,6 +83,10 @@ class FCLayer(Layer):
                                 exponent = self.exponent,
                                 test_mode = test_mode)
         return code
+    
+    def get_comp_func_name(self, prefix):
+        # TODO: make it more flexible
+        return "fc_{}_comp".format(prefix)
 
 class TanhLayer(Layer):
     
@@ -135,6 +142,10 @@ class TanhLayer(Layer):
                                 output_scale_denominator = output_scale_denominator,
                                 test_mode = test_mode)
         return code
+    
+    def get_comp_func_name(self, prefix):
+        # TODO: make it more flexible
+        return "tanh_{}_comp".format(prefix)
 
 class QuanLayer(Layer):
 
@@ -179,11 +190,15 @@ class QuanLayer(Layer):
                                 zero_point = self.zero_point,
                                 test_mode = test_mode)
         return code
+    
+    def get_comp_func_name(self, prefix):
+        # TODO: make it more flexible
+        return "quan_{}_comp".format(prefix)
 
 class DeQuanLayer(Layer):
 
-    q_min = 0
-    q_max = 0
+    zero_point = 0
+    scale = 0
     
     def __init__(self, op, input_tensor, output_tensor, 
                             input_buffer, output_buffer):
@@ -197,8 +212,8 @@ class DeQuanLayer(Layer):
         self.input_size = input_tensor.Shape(1)
         self.output_size = output_tensor.Shape(1)
 
-        self.q_min = input_tensor.Quantization().Min(0)
-        self.q_max = input_tensor.Quantization().Max(0)
+        self.zero_point = input_tensor.Quantization().ZeroPoint(0)
+        self.scale = input_tensor.Quantization().Scale(0)
 
     def generate_struct_code(self, prefix):
         TEMPLATE_FILE = "dequan_layer_struct.c"
@@ -212,13 +227,21 @@ class DeQuanLayer(Layer):
     def generate_comp_code(self, prefix, test_mode):
         TEMPLATE_FILE = "dequan_layer_comp.c"
         _template = template.get_template(TEMPLATE_FILE)
+        scale_numerator, scale_denominator, scale_exponent = get_quan_multiplier(self.scale)
         code = _template.render(prefix=prefix,
                                 input_size = self.input_size,
                                 output_size = self.output_size,
-                                q_min = self.q_min,
-                                q_max = self.q_max,
+                                zero_point = self.zero_point,
+                                scale_numerator = scale_numerator,
+                                scale_denominator = scale_denominator,
+                                scale_exponent = scale_exponent,
+                                scale = self.scale,
                                 test_mode = test_mode)
         return code
+    
+    def get_comp_func_name(self, prefix):
+        # TODO: make it more flexible
+        return "dequan_{}_comp".format(prefix)
 
 class ConcatenationLayer(Layer):
     # TODO
@@ -230,7 +253,12 @@ class SplitLayer(Layer):
 
 
 def fractionation(float_num):
-    return int(float_num * 10**KERNEL_PRECISION), int(10**KERNEL_PRECISION)
+    numerator = float_num
+    denominator = 1
+    while numerator < 1 and denominator < 2**32:
+        numerator *= 10**KERNEL_PRECISION
+        denominator *= 10**KERNEL_PRECISION
+    return int(numerator), int(denominator)
 
 def get_quan_multiplier(multiplier):
     # Return tuple (numerator, denominator, exponent)
@@ -238,5 +266,13 @@ def get_quan_multiplier(multiplier):
     # 'multiplier = mantissa * 2**exponent'
 
     m, e = frexp(multiplier)
+    while abs(e) > 32:
+        if e > 0:
+            e -= 16
+            m *= 2**16
+        else:
+            e += 16
+            m /= 2**16
+            
     numerator, denominator = fractionation(m)
     return numerator, denominator, int(e)
