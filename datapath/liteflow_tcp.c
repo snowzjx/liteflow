@@ -9,7 +9,21 @@
 #include "linux/liteflow.h"
 #include "liteflow_tcp.h"
 
-#define S_TO_US 1000000
+#define S_TO_US (1000000)
+#define MAX_CWND (5000)
+#define MIN_CWND (10)
+#define MIN_RATE (1 << 20)
+// MAX_RATE ~ 2^31
+#define MAX_RATE (1 << 31)
+
+#if __KERNEL_VERSION_MINOR__ <= 14 && __KERNEL_VERSION_MINOR__ >= 13
+#define COMPAT_MODE
+#define MAX_SKB_STORED (50)
+struct skb_info {
+    u64 first_tx_mstamp;
+    u32 interval_us;
+};
+#endif
 
 struct lf_tcp_metric {
     s64 values[NUM_OF_INPUT_METRICS];
@@ -24,6 +38,9 @@ struct lf_tcp_internal {
     u32 current_pointer;
     s64 global_stats[NUM_OF_GLOBAL_STATS];
     struct lf_tcp_metric* metrics; // ring buffer
+#ifdef COMPAT_MODE
+    struct skb_info* skb_array;
+#endif
 };
 
 static inline void lf_increase_pointer(struct lf_tcp_internal *lf_tcp) {
@@ -36,6 +53,33 @@ static inline void lf_increase_pointer(struct lf_tcp_internal *lf_tcp) {
 // Set rate towards connection
 static inline void lf_set_rate (struct sock *sk, u32 rate) {
     sk->sk_pacing_rate = rate;
+}
+
+static inline void lf_set_relative_rate(struct sock *sk, s32 delta) {
+    struct tcp_sock *tp = tcp_sk(sk);
+    u64 cur_rate = sk->sk_pacing_rate;
+    
+    tp->snd_cwnd = MAX_CWND;
+    tp->snd_ssthresh = MAX_CWND;
+
+    if (delta > 0) {
+        sk->sk_pacing_rate = min((u32)MAX_RATE,
+                                 (u32)(cur_rate + cur_rate * delta / OUTPUT_SCALE / 40));
+    } 
+    else {
+        sk->sk_pacing_rate = max((u32)MIN_RATE,
+                                (u32)(cur_rate * OUTPUT_SCALE * 40 / (OUTPUT_SCALE * 40 - delta)));
+    }
+}
+
+static inline void lf_set_relative_cwnd(struct tcp_sock* tp, s32 delta) {
+    if (delta > 0) {
+        tp->snd_cwnd = tp->snd_cwnd + tp->snd_cwnd * delta / OUTPUT_SCALE / 40; 
+    } 
+    else {
+        tp->snd_cwnd = max((u32)MIN_CWND,
+                            (u32)(tp->snd_cwnd * OUTPUT_SCALE * 40 / (OUTPUT_SCALE * 40 - delta)));
+    }   
 }
 
 static int rate_sample_valid(const struct rate_sample *rs) {
@@ -94,13 +138,14 @@ static inline int report_to_user(s64 *nn_input, u32 input_size) {
     return LF_SUCCS;
 }
 
-// kernel version == 4.14.0
 static inline int load_metric(struct lf_tcp_internal *ca, struct tcp_sock *tp, const struct rate_sample *rs) {
     
     struct lf_tcp_metric* metric;
     u64 rin = 0, rout = 0;
     u64 ack_us = 0, snd_us = 0;
-    int i;
+#ifdef COMPAT_MODE
+    int i = 0;
+#endif
     
     int measured_valid_rate = rate_sample_valid(rs);
     if (measured_valid_rate != 0) {
@@ -126,6 +171,7 @@ static inline int load_metric(struct lf_tcp_internal *ca, struct tcp_sock *tp, c
     }
     
 
+#ifdef COMPAT_MODE
     ack_us = tcp_stamp_us_delta(tp->tcp_mstamp, rs->prior_mstamp);
     for (i = 0; i < MAX_SKB_STORED; ++i) {
         if (ca->skb_array[i].first_tx_mstamp == tp->first_tx_mstamp) {
@@ -133,16 +179,22 @@ static inline int load_metric(struct lf_tcp_internal *ca, struct tcp_sock *tp, c
             break;
         }
     }
+#endif
 
     if (ack_us != 0 && snd_us != 0) {
         rin = rout = (s64) rs->delivered * tp->mss_cache * S_TO_US;
         do_div(rin, snd_us);
         do_div(rout, ack_us);
-        metric->values[INPUT_METRICS_POS_SNED_RATIO] = INPUT_SCALE * rin;
-        do_div(metric->values[INPUT_METRICS_POS_SNED_RATIO], rout);
+        if (rin < 1000 * rout) {
+            metric->values[INPUT_METRICS_POS_SEND_RATIO] = INPUT_SCALE * rin;
+            do_div(metric->values[INPUT_METRICS_POS_SEND_RATIO], rout);
+        }
+        else {
+            metric->values[INPUT_METRICS_POS_SEND_RATIO] = INPUT_SCALE * 1;
+        }
     }
     else {
-        metric->values[INPUT_METRICS_POS_SNED_RATIO] = INPUT_SCALE * 1;
+       metric->values[INPUT_METRICS_POS_SEND_RATIO] = INPUT_SCALE * 1;
     }
 
     return LF_SUCCS;
@@ -151,6 +203,7 @@ static inline int load_metric(struct lf_tcp_internal *ca, struct tcp_sock *tp, c
 static void lf_tcp_conn_init(struct sock *sk) {
     struct lf_tcp_internal *ca;
     struct tcp_sock *tp;
+    int i;
 
     printk(KERN_INFO "New flow handled by liteflow tcp kernel inits...\n");
     ca = inet_csk_ca(sk);
@@ -166,12 +219,22 @@ static void lf_tcp_conn_init(struct sock *sk) {
     ca->current_pointer = 0;
     ca->metrics = kmalloc(sizeof(struct lf_tcp_metric) * HISTORY_LEN, GFP_KERNEL);
     memset(ca->metrics, 0, sizeof(struct lf_tcp_metric) * HISTORY_LEN);
+    for (i = 0; i < HISTORY_LEN; ++i) {
+        ca->metrics[i].values[INPUT_METRICS_POS_LAT_RATIO] = INPUT_SCALE * 1;
+    }
+
+#ifdef COMPAT_MODE
+    ca->skb_array = kmalloc(sizeof(struct skb_info) * MAX_SKB_STORED, GFP_KERNEL);
+    memset(ca->skb_array, 0, sizeof(struct skb_info) * MAX_SKB_STORED);
+#endif
 
     if (!(tp->ecn_flags & TCP_ECN_OK)) {
         INET_ECN_dontxmit(sk);
     }
     // Turn on pacing, so we can use pacing to control the speed
     // Learn from BBR and CCP :)
+    tp->snd_cwnd = MAX_CWND;
+    tp->snd_ssthresh = MAX_CWND;
     cmpxchg(&sk->sk_pacing_status, SK_PACING_NONE, SK_PACING_NEEDED);
 }
 
@@ -185,6 +248,13 @@ static void lf_tcp_conn_release(struct sock *sk)
     if (ca->metrics != NULL) {
         kfree(ca->metrics);
     }
+
+#ifdef COMPAT_MODE
+    if (ca->skb_array != NULL) {
+        kfree(ca->skb_array);
+        ca->skb_array = NULL;
+    }
+#endif
 }
 
 // Learn from CCP
@@ -206,8 +276,9 @@ static u32 lf_tcp_conn_undo_cwnd(struct sock *sk)
 static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs) 
 {
     int ret;
-    int global_stats_pos, metric_pos, value_pos, pos = 0;
-    u32 output_rate;
+    //int global_stats_pos;
+    int metric_pos, value_pos, pos = 0;
+    s64 output_rate;
     struct lf_tcp_internal *ca;
     struct tcp_sock *tp;
     s64 nn_input[INPUT_SIZE];
@@ -232,9 +303,9 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
     //     pos++;
     // }
 
-    for (metric_pos = 0; metric_pos < HISTORY_LEN; ++metric_pos) {
+    for (pos = 0, metric_pos = 1; metric_pos <= HISTORY_LEN; ++metric_pos) {
         for (value_pos = 0; value_pos < NUM_OF_INPUT_METRICS; ++value_pos) {
-            nn_input[pos] = ca->metrics[(ca->current_pointer + HISTORY_LEN - metric_pos) % HISTORY_LEN].values[value_pos];
+            nn_input[pos] = ca->metrics[(ca->current_pointer + metric_pos) % HISTORY_LEN].values[value_pos];
             pos++;
         }
     }
@@ -250,7 +321,8 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
         printk(KERN_ERR "Query NN model failed!\n");
     } else {
         output_rate = nn_output[OUTPUT_RATE];
-        lf_set_rate(sk, output_rate);
+        //lf_set_rate(sk, output_rate);
+        lf_set_relative_rate(sk, output_rate);
     }
 
     lf_increase_pointer(ca);
@@ -263,7 +335,13 @@ static void lf_tcp_conn_in_ack_event(struct sock *sk, u32 flags)
     const struct tcp_sock *tp;
     struct lf_tcp_internal *ca;
     u32 acked_bytes, acked_packets;
-    
+
+#ifdef COMPAT_MODE
+    int i = 0;
+    struct sk_buff *skb = tcp_write_queue_head(sk);
+    struct tcp_skb_cb *scb;
+#endif
+
     tp = tcp_sk(sk);
     ca = inet_csk_ca(sk);
 
@@ -289,6 +367,21 @@ static void lf_tcp_conn_in_ack_event(struct sock *sk, u32 flags)
     //     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_BYTES] = 0;
     //     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_PACKETS] = 0;
     // }
+// learn from ccp
+#ifdef COMPAT_MODE
+    for(i = 0; i < MAX_SKB_STORED; ++i) {
+        if(skb) {
+            scb = TCP_SKB_CB(skb);
+            ca->skb_array[i].first_tx_mstamp = skb->skb_mstamp;
+            ca->skb_array[i].interval_us = tcp_stamp_us_delta(skb->skb_mstamp, scb->tx.first_tx_mstamp);
+            skb = skb->next;
+        }
+        else {
+            ca->skb_array[i].first_tx_mstamp = 0;
+            ca->skb_array[i].interval_us = 0;
+        }
+    }
+#endif
 }
 
 
