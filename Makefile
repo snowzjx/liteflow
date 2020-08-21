@@ -2,6 +2,7 @@ SHELL := /bin/bash
 
 LF_KERNEL := lf_kernel
 LF_TCP_KERNERL := lf_tcp_kernel
+LF_FIREWALL_KERNERL := lf_firewall_kernel
 
 LF_LIB := liblf
 
@@ -55,6 +56,12 @@ tcp_kernel_install:
 tcp_kernel_remove:
 		sudo sysctl net.ipv4.tcp_congestion_control=cubic
 		sudo rmmod $(LF_TCP_KERNERL)
+
+firewall_kernel_install:
+		@cd build/datapath; sudo insmod $(LF_FIREWALL_KERNERL).ko
+
+firewall_kernel_remove:
+		sudo rmmod $(LF_FIREWALL_KERNERL)
 
 clean:
 		-@rm -rf build

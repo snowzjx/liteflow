@@ -43,10 +43,16 @@ make module_install
 ```
 to install LiteFlow general kernel.
 
+3. Install LiteFlow extensions.
 
-3. If you would like to use LiteFlow with TCP congestion control, you should also install LiteFlow TCP kernel.
+1). If you would like to use LiteFlow with TCP congestion control, you should also install LiteFlow TCP kernel.
 ```
 make tcp_kernel_install
+```
+
+2). If you would like to use LiteFlow with Firewall (netfilter), you should also install LiteFlow Firewall kernel.
+```
+make tcp_firewall_install
 ```
 
 4. Install user space library
@@ -56,16 +62,9 @@ make lib_install
 ```
 
 5. Install python library
-
-TBD
-
+```
+cd python
+sudo python3 setup.py install
+```
 
 6. Let's GO!!!
-
-## Test
-
-TBD
-
-## Contibution
-
-TBD
