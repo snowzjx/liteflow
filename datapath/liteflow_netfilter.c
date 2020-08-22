@@ -1,4 +1,4 @@
-// LiteFlow Firewall Kernel will register to both LiteFlow kernek and Kernel IPV4 Netfilter
+// LiteFlow Netfilter Kernel will register to both LiteFlow kernek and Kernel IPV4 Netfilter
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/netfilter.h>
@@ -6,7 +6,7 @@
 #include <linux/version.h>
 
 #include "linux/liteflow.h"
-#include "liteflow_firewall.h"
+#include "liteflow_netfilter.h"
 
 static unsigned int
 hook_func_incoming(void *priv,
@@ -25,7 +25,7 @@ hook_func_outcoming(void *priv,
 }
 
 static struct nf_hook_ops
-lf_firewall_ops_in __read_mostly = {
+lf_netfilter_ops_in __read_mostly = {
 		hook: hook_func_incoming,
 		hooknum: NF_INET_PRE_ROUTING,
 		pf: PF_INET,
@@ -33,35 +33,35 @@ lf_firewall_ops_in __read_mostly = {
 };
 
 static struct nf_hook_ops
-lf_firewall_ops_out __read_mostly = {
+lf_netfilter_ops_out __read_mostly = {
 		hook: hook_func_outcoming,
 		hooknum: NF_INET_POST_ROUTING,
 		pf: PF_INET,
 		priority: NF_IP_PRI_FIRST
 };
 
-struct app lf_firewall_app = {
-    .appid = LF_FIREWALL_APP_ID,
+struct app lf_netfilter_app = {
+    .appid = LF_NETFILTER_APP_ID,
     .input_size = NUM_OF_INPUT_VALUE,
     .output_size = NUM_OF_OUTPUT_VALUE,
 };
 
 static int
-__init liteflow_firewall_kernel_init(void)
+__init liteflow_netfilter_kernel_init(void)
 {
 	int ret;
 
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,13,0)
-    nf_register_net_hook(&init_net, &lf_firewall_ops_in);
-	nf_register_net_hook(&init_net, &lf_firewall_ops_out);
+    nf_register_net_hook(&init_net, &lf_netfilter_ops_in);
+	nf_register_net_hook(&init_net, &lf_netfilter_ops_out);
 #else
-    nf_register_hook(&lf_firewall_ops_in);
-	nf_register_hook(&lf_firewall_ops_out);
+    nf_register_hook(&lf_netfilter_ops_in);
+	nf_register_hook(&lf_netfilter_ops_out);
 #endif
 
-	ret = lf_register_app(&lf_firewall_app);
+	ret = lf_register_app(&lf_netfilter_app);
     if (ret != LF_SUCCS) {
-        printk(KERN_ERR "Cannot register liteflow firewall kernel with liteflow kernel!\n");
+        printk(KERN_ERR "Cannot register liteflow netfilter kernel with liteflow kernel!\n");
         return ret;
     }
 
@@ -69,22 +69,22 @@ __init liteflow_firewall_kernel_init(void)
 }
 
 static void
-__exit liteflow_firewall_kernel_exit(void)
+__exit liteflow_netfilter_kernel_exit(void)
 {
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(4,13,0)
-	nf_unregister_net_hook(&init_net, &lf_firewall_ops_out);
-    nf_unregister_net_hook(&init_net, &lf_firewall_ops_in);
+	nf_unregister_net_hook(&init_net, &lf_netfilter_ops_out);
+    nf_unregister_net_hook(&init_net, &lf_netfilter_ops_in);
 #else
-	nf_unregister_hook(&lf_firewall_ops_out);
-	nf_unregister_hook(&lf_firewall_ops_in);
+	nf_unregister_hook(&lf_netfilter_ops_out);
+	nf_unregister_hook(&lf_netfilter_ops_in);
 #endif
 	
-    lf_unregister_app(LF_FIREWALL_APP_ID);
+    lf_unregister_app(LF_NETFILTER_APP_ID);
 }
 
-module_init(liteflow_firewall_kernel_init);
-module_exit(liteflow_firewall_kernel_exit);
+module_init(liteflow_netfilter_kernel_init);
+module_exit(liteflow_netfilter_kernel_exit);
 
-MODULE_DESCRIPTION("liteflow firewall kernel");
+MODULE_DESCRIPTION("liteflow netfilter kernel");
 MODULE_AUTHOR("Junxue ZHANG");
 MODULE_LICENSE("GPL v2");

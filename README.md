@@ -50,9 +50,9 @@ to install LiteFlow general kernel.
 make tcp_kernel_install
 ```
 
-2). If you would like to use LiteFlow with Firewall (netfilter), you should also install LiteFlow Firewall kernel.
+2). If you would like to use LiteFlow with packet filtering (netfilter), you should also install LiteFlow Netfilter kernel.
 ```
-make tcp_firewall_install
+make tcp_netfilter_install
 ```
 
 4. Install user space library
