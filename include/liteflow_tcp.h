@@ -13,22 +13,21 @@
 // Here we allow different connection can use different models, just change the APP_ID per connection
 // In this implementation, connection information is put in the input of the NN
 
+// Aurora input
+#define INPUT_SCALE 1000
+#define OUTPUT_SCALE 1000
+
 // NUM_OF_INPUT_METRICS metrics in a history record
-// such as acked bytes, ecn bytes and so on
-#define INPUT_METRICS_POS_BYTES_ACKED 0
-#define INPUT_METRICS_POS_PACKETS_ACKED 1
-#define INPUT_METRICS_POS_ECN_BYTES 2
-#define INPUT_METRICS_POS_ECN_PACKETS 3
-#define INPUT_METRICS_POS_RTT_SAMPLE_US 4
-#define INPUT_METRICS_POS_DELIVERED 5
-#define INPUT_METRICS_POS_INTERVAL_US 6
-#define INPUT_METRICS_POS_RATE_OUTGOING 7
-// More can be added
-#define NUM_OF_INPUT_METRICS 8
+// Here we dedicate the design for PCC-RL
+#define INPUT_METRICS_POS_SENT_LAT_INFLACTION 0
+#define INPUT_METRICS_POS_LAT_RATIO 1
+#define INPUT_METRICS_POS_SEND_RATIO 2
 
-#define HISTORY_LEN 3
+#define NUM_OF_INPUT_METRICS 3
 
-#define INPUT_SIZE (NUM_OF_GLOBAL_STATS + NUM_OF_INPUT_METRICS * HISTORY_LEN)
+#define HISTORY_LEN 10
+
+#define INPUT_SIZE (NUM_OF_INPUT_METRICS * HISTORY_LEN)
 
 // NUM_OF_GLOBAL_STATS per connection
 #define GLOBAL_STATS_POS_MIN_RTT_US 0
