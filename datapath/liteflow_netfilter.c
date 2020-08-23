@@ -53,8 +53,10 @@ hook_func_incoming(void *priv,
     if (ret == LF_ERROR) {
         printk(KERN_ERR "Query NN model failed!\n");
     } else {
-        should_drop = nn_output[OUTPUT_SHOULD_DROP];
-		printk(KERN_ERR "should_drop = %d\n", should_drop);
+		if (nn_output[OUTPUT_SHOULD_PASS] > nn_output[OUTPUT_SHOULD_DROP])
+			return NF_ACCEPT;
+		else
+			return NF_DROP;
     }
 
     return NF_ACCEPT;
@@ -131,4 +133,5 @@ module_exit(liteflow_netfilter_kernel_exit);
 
 MODULE_DESCRIPTION("liteflow netfilter kernel");
 MODULE_AUTHOR("Junxue ZHANG");
+MODULE_AUTHOR("Chaoliang ZENG"");
 MODULE_LICENSE("GPL v2");
