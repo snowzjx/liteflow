@@ -1,9 +1,11 @@
 // LiteFlow Netfilter Kernel will register to both LiteFlow kernek and Kernel IPV4 Netfilter
 #include <linux/module.h>
 #include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/netfilter.h>
 #include <linux/netfilter_ipv4.h>
-#include <linux/version.h>
+#include <linux/ip.h>
+#include <linux/tcp.h>
 
 #include "linux/liteflow.h"
 #include "liteflow_netfilter.h"
@@ -13,6 +15,48 @@ hook_func_incoming(void *priv,
 		struct sk_buff *skb,
 		const struct nf_hook_state *state)
 {
+	int ret, should_drop;
+	struct iphdr *ip_header;
+	struct tcphdr *tcp_header;
+	__be32 saddr, daddr;
+	__be16 sport, dport;
+	s64 nn_input[NUM_OF_INPUT_VALUE];
+	s64 nn_output[NUM_OF_OUTPUT_VALUE];
+
+	ip_header = ip_hdr(skb);
+
+	if (ip_header -> protocol == IPPROTO_TCP) {
+		tcp_header = tcp_hdr(skb);
+	} else {
+		return NF_ACCEPT; // Non TCP traffic will not be processed
+	}
+
+	saddr = ntohl(ip_header->saddr);
+	daddr = ntohl(ip_header->daddr);
+	sport = ntohs(tcp_header->source);
+	dport = ntohs(tcp_header->dest);
+
+	nn_input[INPUT_METRICS_POS_SRC_IP_A] = (saddr >> 24) & 0xff;
+	nn_input[INPUT_METRICS_POS_SRC_IP_B] = (saddr >> 16) & 0xff;
+	nn_input[INPUT_METRICS_POS_SRC_IP_C] = (saddr >> 8) & 0xff;
+	nn_input[INPUT_METRICS_POS_SRC_IP_D] = (saddr >> 0) & 0xff;
+
+	nn_input[INPUT_METRICS_POS_DST_IP_A] = (daddr >> 24) & 0xff;
+	nn_input[INPUT_METRICS_POS_DST_IP_B] = (daddr >> 16) & 0xff;
+	nn_input[INPUT_METRICS_POS_DST_IP_C] = (daddr >> 8) & 0xff;
+	nn_input[INPUT_METRICS_POS_DST_IP_D] = (daddr >> 0) & 0xff;
+
+	nn_input[INPUT_METRICS_POS_SRC_PORT] = sport;
+	nn_input[INPUT_METRICS_POS_DST_PORT] = dport;
+
+	ret = lf_query_model(LF_NETFILTER_APP_ID, nn_input, nn_output);
+    if (ret == LF_ERROR) {
+        printk(KERN_ERR "Query NN model failed!\n");
+    } else {
+        should_drop = nn_output[OUTPUT_SHOULD_DROP];
+		printk(KERN_ERR "should_drop = %d\n", should_drop);
+    }
+
     return NF_ACCEPT;
 }
 
