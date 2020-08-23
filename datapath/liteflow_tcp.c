@@ -2,6 +2,7 @@
 #include <linux/module.h>
 #include <linux/kernel.h>
 #include <linux/net.h>
+#include <linux/version.h>
 #include <net/tcp.h>
 #include <linux/inet_diag.h>
 #include <net/genetlink.h>
