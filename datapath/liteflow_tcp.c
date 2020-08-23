@@ -295,13 +295,6 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
     if(ret == LF_ERROR) {
         return;
     }
-    
-    // prepare input vector
-    // TODO performance is not good
-    // for (global_stats_pos = 0; global_stats_pos < NUM_OF_GLOBAL_STATS; ++global_stats_pos) {
-    //     nn_input[pos] = ca->global_stats[global_stats_pos];
-    //     pos++;
-    // }
 
     for (pos = 0, metric_pos = 1; metric_pos <= HISTORY_LEN; ++metric_pos) {
         for (value_pos = 0; value_pos < NUM_OF_INPUT_METRICS; ++value_pos) {
@@ -321,7 +314,6 @@ static void lf_tcp_conn_nn_control(struct sock *sk, const struct rate_sample *rs
         printk(KERN_ERR "Query NN model failed!\n");
     } else {
         output_rate = nn_output[OUTPUT_RATE];
-        //lf_set_rate(sk, output_rate);
         lf_set_relative_rate(sk, output_rate);
     }
 
@@ -358,15 +350,6 @@ static void lf_tcp_conn_in_ack_event(struct sock *sk, u32 flags)
 
     ca->last_snd_una = tp->snd_una;
 
-    // ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_BYTES_ACKED] = acked_bytes;
-    // ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_PACKETS_ACKED] = acked_packets;
-    // if (flags & CA_ACK_ECE) {
-    //     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_BYTES] = acked_bytes;
-    //     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_PACKETS] = acked_packets;
-    // } else {
-    //     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_BYTES] = 0;
-    //     ca->metrics[ca->current_pointer].values[INPUT_METRICS_POS_ECN_PACKETS] = 0;
-    // }
 // learn from ccp
 #ifdef COMPAT_MODE
     for(i = 0; i < MAX_SKB_STORED; ++i) {
@@ -394,13 +377,9 @@ struct app lf_tcp_app = {
 struct tcp_congestion_ops lf_tcp_congestion_ops = {
     .init = lf_tcp_conn_init,
     .release = lf_tcp_conn_release,
-
     .ssthresh = lf_tcp_conn_ssthresh,
     .undo_cwnd = lf_tcp_conn_undo_cwnd,
-    // .cong_avoid = lf_tcp_conn_cong_avoid,
     .cong_control = lf_tcp_conn_nn_control,
-    // .set_state = ,
-    // .pkts_acked = ，
     .in_ack_event = lf_tcp_conn_in_ack_event,
     .name = "lf_tcp_kernel",
     .owner = THIS_MODULE,
