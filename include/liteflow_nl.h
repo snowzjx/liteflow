@@ -1,7 +1,6 @@
 #ifndef LITEFLOW_NL_H
 #define LITEFLOW_NL_H
 
-#include <linux/module.h>
 #include <linux/kernel.h>
 
 #ifndef __KERNEL__

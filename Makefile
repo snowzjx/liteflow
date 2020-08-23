@@ -2,6 +2,7 @@ SHELL := /bin/bash
 
 LF_KERNEL := lf_kernel
 LF_TCP_KERNERL := lf_tcp_kernel
+LF_NETFILTER_KERNERL := lf_netfilter_kernel
 
 LF_LIB := liblf
 
@@ -55,6 +56,12 @@ tcp_kernel_install:
 tcp_kernel_remove:
 		sudo sysctl net.ipv4.tcp_congestion_control=cubic
 		sudo rmmod $(LF_TCP_KERNERL)
+
+netfilter_kernel_install:
+		@cd build/datapath; sudo insmod $(LF_NETFILTER_KERNERL).ko
+
+netfilter_kernel_remove:
+		sudo rmmod $(LF_NETFILTER_KERNERL)
 
 clean:
 		-@rm -rf build
