@@ -265,18 +265,15 @@ def get_quan_multiplier(multiplier):
     # 'multiplier = mantissa * 2**exponent'
 
     m, e = frexp(multiplier)
-
-    if e < -31:
-        return 0, 1, 0
-
-    if e > 0:
-        while e > 32 or m < 1:
+    while abs(e) > 32:
+        if e > 0:
             e -= 1
             m *= 2
-    elif e < 0:
-        while e < -32 and m > 2:
+        elif m > 2:
             e += 1
             m /= 2
+        else:
+            return 0, 1, 0
             
     numerator, denominator = fractionation(m)
     return numerator, denominator, int(e)
