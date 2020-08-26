@@ -36,15 +36,11 @@ hook_func_incoming(void *priv,
 	sport = ntohs(tcp_header->source);
 	dport = ntohs(tcp_header->dest);
 
-	nn_input[INPUT_METRICS_POS_SRC_IP_A] = (saddr >> 24) & 0xff;
-	nn_input[INPUT_METRICS_POS_SRC_IP_B] = (saddr >> 16) & 0xff;
-	nn_input[INPUT_METRICS_POS_SRC_IP_C] = (saddr >> 8) & 0xff;
-	nn_input[INPUT_METRICS_POS_SRC_IP_D] = (saddr >> 0) & 0xff;
+	nn_input[INPUT_METRICS_POS_SRC_IP_A_B] = (saddr >> 16) & 0xffff;;
+	nn_input[INPUT_METRICS_POS_SRC_IP_C_D] = (saddr >> 0) & 0xffff;
 
-	nn_input[INPUT_METRICS_POS_DST_IP_A] = (daddr >> 24) & 0xff;
-	nn_input[INPUT_METRICS_POS_DST_IP_B] = (daddr >> 16) & 0xff;
-	nn_input[INPUT_METRICS_POS_DST_IP_C] = (daddr >> 8) & 0xff;
-	nn_input[INPUT_METRICS_POS_DST_IP_D] = (daddr >> 0) & 0xff;
+	nn_input[INPUT_METRICS_POS_DST_IP_A_B] = (daddr >> 16) & 0xffff;
+	nn_input[INPUT_METRICS_POS_DST_IP_C_D] = (daddr >> 0) & 0xffff;
 
 	nn_input[INPUT_METRICS_POS_SRC_PORT] = sport;
 	nn_input[INPUT_METRICS_POS_DST_PORT] = dport;
@@ -53,8 +49,10 @@ hook_func_incoming(void *priv,
     if (ret == LF_ERROR) {
         printk(KERN_ERR "Query NN model failed!\n");
     } else {
-        should_drop = nn_output[OUTPUT_SHOULD_DROP];
-		printk(KERN_ERR "should_drop = %d\n", should_drop);
+		if (nn_output[OUTPUT_SHOULD_PASS] > nn_output[OUTPUT_SHOULD_DROP])
+			return NF_ACCEPT;
+		else
+			return NF_DROP;
     }
 
     return NF_ACCEPT;
@@ -131,4 +129,5 @@ module_exit(liteflow_netfilter_kernel_exit);
 
 MODULE_DESCRIPTION("liteflow netfilter kernel");
 MODULE_AUTHOR("Junxue ZHANG");
+MODULE_AUTHOR("Chaoliang ZENG");
 MODULE_LICENSE("GPL v2");

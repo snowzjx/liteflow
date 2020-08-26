@@ -251,7 +251,6 @@ class SplitLayer(Layer):
     # TODO
     pass
 
-
 def fractionation(float_num):
     numerator = float_num
     denominator = 1
@@ -268,11 +267,13 @@ def get_quan_multiplier(multiplier):
     m, e = frexp(multiplier)
     while abs(e) > 32:
         if e > 0:
-            e -= 16
-            m *= 2**16
+            e -= 1
+            m *= 2
+        elif m > 2:
+            e += 1
+            m /= 2
         else:
-            e += 16
-            m /= 2**16
+            return 0, 1, 0
             
     numerator, denominator = fractionation(m)
     return numerator, denominator, int(e)
