@@ -129,5 +129,5 @@ module_exit(liteflow_netfilter_kernel_exit);
 
 MODULE_DESCRIPTION("liteflow netfilter kernel");
 MODULE_AUTHOR("Junxue ZHANG");
-MODULE_AUTHOR("Chaoliang ZENG"");
+MODULE_AUTHOR("Chaoliang ZENG");
 MODULE_LICENSE("GPL v2");
