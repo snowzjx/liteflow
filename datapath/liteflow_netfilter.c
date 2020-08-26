@@ -36,15 +36,11 @@ hook_func_incoming(void *priv,
 	sport = ntohs(tcp_header->source);
 	dport = ntohs(tcp_header->dest);
 
-	nn_input[INPUT_METRICS_POS_SRC_IP_A] = (saddr >> 24) & 0xff;
-	nn_input[INPUT_METRICS_POS_SRC_IP_B] = (saddr >> 16) & 0xff;
-	nn_input[INPUT_METRICS_POS_SRC_IP_C] = (saddr >> 8) & 0xff;
-	nn_input[INPUT_METRICS_POS_SRC_IP_D] = (saddr >> 0) & 0xff;
+	nn_input[INPUT_METRICS_POS_SRC_IP_A_B] = (saddr >> 16) & 0xffff;;
+	nn_input[INPUT_METRICS_POS_SRC_IP_C_D] = (saddr >> 0) & 0xffff;
 
-	nn_input[INPUT_METRICS_POS_DST_IP_A] = (daddr >> 24) & 0xff;
-	nn_input[INPUT_METRICS_POS_DST_IP_B] = (daddr >> 16) & 0xff;
-	nn_input[INPUT_METRICS_POS_DST_IP_C] = (daddr >> 8) & 0xff;
-	nn_input[INPUT_METRICS_POS_DST_IP_D] = (daddr >> 0) & 0xff;
+	nn_input[INPUT_METRICS_POS_DST_IP_A_B] = (daddr >> 16) & 0xffff;
+	nn_input[INPUT_METRICS_POS_DST_IP_C_D] = (daddr >> 0) & 0xffff;
 
 	nn_input[INPUT_METRICS_POS_SRC_PORT] = sport;
 	nn_input[INPUT_METRICS_POS_DST_PORT] = dport;
