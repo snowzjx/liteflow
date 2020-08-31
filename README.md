@@ -6,7 +6,7 @@ LiteFlow is a framework to embed a trained neural network into Linux kernel data
 
 The key of LiteFlow is to provide predictable performance neural network for Linux kernel datapath without the ease to train and re-train model in user space. LiteFlow uses performance centric model compression techniques to make the trained neural network suitable for Linux kernel, and dynamically load the model into the kernel. LiteFlow also provides model rollback functions to ensure the correctness of datapath.
 
-[![Build Status](https://travis-ci.org/liteflow/liteflow.svg?branch=master)](https://travis-ci.org/liteflow/liteflow)
+[![Build Status](https://travis-ci.org/snowzjx/liteflow.svg?branch=master)](https://travis-ci.org/liteflow/liteflow)
 
 ## Clone the repo
 
