@@ -248,9 +248,6 @@ __init liteflow_2333_model_init(void)
     
     
     lf_register_model(1, &model_2333);
-
-    
-    lf_activate_model(1, 2333);
     
     // TODO
     _input[0] = 41 ;

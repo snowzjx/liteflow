@@ -4,7 +4,6 @@
 
 #include "linux/liteflow.h"
 
-#include "liteflow_nl.h"
 #include "liteflow_model.h"
 
 #define MAX_APP 32
@@ -16,8 +15,9 @@ struct __app {
     u8 appid;
     u32 input_size;
     u32 output_size;
-    struct model_container *active_model;
-    struct model_container *backup_model;
+    struct model_container *model_slot_0;
+    struct model_container *model_slot_1;
+    u8 active_model; // 0 or 1
     struct hlist_node node;
     // other metrics information
 };
@@ -44,8 +44,9 @@ int lf_register_app(struct app* app)
     apps[appid].appid = appid;
     apps[appid].input_size = app->input_size;
     apps[appid].output_size = app->output_size;
-    apps[appid].active_model = NULL;
-    apps[appid].backup_model = NULL;
+    apps[appid].model_slot_0 = NULL;
+    apps[appid].model_slot_1 = NULL;
+    apps[appid].active_model = 0;
     write_unlock(&lf_lock);
     return LF_SUCCS;
 
@@ -72,12 +73,12 @@ int lf_unregister_app(u8 appid)
     }
 
     printk(KERN_INFO "Unregistering app with appid: %u...\n", appid);
-    model_to_delete = apps[appid].active_model;
+    model_to_delete = apps[appid].model_slot_0;
     if (model_to_delete!= NULL) {
         destroy_model(model_to_delete);
     }
     
-    model_to_delete = apps[appid].backup_model;
+    model_to_delete = apps[appid].model_slot_1;
     if (model_to_delete!= NULL) {
         destroy_model(model_to_delete);
     }
@@ -96,12 +97,13 @@ int
 lf_register_model(u8 appid, struct model_container *model)
 {
     u8 ret;
+
+    s8 info_model_uuid_0, info_model_uuid_1;
+
     if (appid > MAX_APP) {
         printk(KERN_ERR "Unsupported appid: %u.\n", appid);
         return LF_ERROR;
     }
-
-    write_lock(&lf_lock);
 
     if (apps[appid].appid == APP_ID_UNUSE) {
         printk(KERN_ERR "Need to register app before registering model.\n");
@@ -123,10 +125,46 @@ lf_register_model(u8 appid, struct model_container *model)
     if (ret == LF_ERROR) {
         goto error;
     }
-    apps[appid].backup_model = model;
+    if (apps[appid].active_model == 0) {
+        if (apps[appid].model_slot_1 != NULL) {
+            printk(KERN_INFO "Deleting model witu uuid: %u to app with appid: %u...\n", apps[appid].model_slot_1->uuid, appid);
+            destroy_model(apps[appid].model_slot_1);
+        }
+        apps[appid].model_slot_1 = model;
+    } else {
+        if (apps[appid].model_slot_0 != NULL) {
+            printk(KERN_INFO "Deleting model witu uuid: %u to app with appid: %u...\n", apps[appid].model_slot_0->uuid, appid);
+            destroy_model(apps[appid].model_slot_0);
+        }
+        apps[appid].model_slot_0 = model;
+    }
+
+    write_lock(&lf_lock);
+    if (apps[appid].active_model == 0) {
+        apps[appid].active_model = 1;
+    } else {
+        apps[appid].active_model = 0;
+    }
     write_unlock(&lf_lock);
         
     printk(KERN_INFO "Model witu uuid: %u is registered to app with appid: %u!\n", model->uuid, appid);
+
+    if (apps[appid].model_slot_0 != NULL) {
+        info_model_uuid_0 = apps[appid].model_slot_0->uuid;
+    } else {
+        info_model_uuid_0 = -1;
+    }
+
+    if (apps[appid].model_slot_1 != NULL) {
+        info_model_uuid_1 = apps[appid].model_slot_1->uuid;
+    } else {
+        info_model_uuid_1 = -1;
+    }
+
+    printk(KERN_INFO "Current slot 0 is registered with model: %d\n", info_model_uuid_0);
+    printk(KERN_INFO "Current slot 1 is registered with model: %d\n", info_model_uuid_1);
+    printk(KERN_INFO "Current active slot is: %u\n", apps[appid].active_model);
+
     return LF_SUCCS;
 
 error:
@@ -138,7 +176,10 @@ EXPORT_SYMBOL(lf_register_model);
 int 
 lf_unregister_model(u8 appid, u32 model_uuid)
 {
-    struct model_container *model;
+    struct model_container *model, *model_to_delete;
+    u8 which_model;
+
+    model_to_delete = NULL;
 
     if (appid > MAX_APP) {
         printk(KERN_ERR "Unsupported appid: %u.\n", appid);
@@ -151,21 +192,33 @@ lf_unregister_model(u8 appid, u32 model_uuid)
         goto error;
     }
 
-    model = apps[appid].active_model;
+    model = apps[appid].model_slot_0;
     if (model != NULL && model->uuid == model_uuid) {
-        printk(KERN_ERR "Cannot unregister active model.\n");
-        goto error;
+        model_to_delete = model;
+        which_model = 0;
     }
 
-    model = apps[appid].backup_model;
-    if (model == NULL || model->uuid != model_uuid) {
-        printk(KERN_ERR "No model with uuid: %u to unregister.\n", model_uuid);
-        goto error;
+    model = apps[appid].model_slot_1;
+    if (model != NULL && model->uuid == model_uuid) {
+        model_to_delete = model;
+        which_model = 1;
     }
+
     printk(KERN_INFO "Unregister model with uuid: %u with app with appid: %u...\n", model_uuid, appid);
 
-    destroy_model(model);
-    apps[appid].backup_model = NULL;
+    if (model_to_delete == NULL) {
+        printk(KERN_INFO "The model has already been deleted...\n");
+        write_unlock(&lf_lock);
+
+        return LF_SUCCS;
+    }
+
+    destroy_model(model_to_delete);
+    if (which_model == 0) {
+        apps[appid].model_slot_0 = NULL;
+    } else {
+        apps[appid].model_slot_1 = NULL;
+    }
     write_unlock(&lf_lock);
 
     return LF_SUCCS;
@@ -175,52 +228,6 @@ error:
     return LF_ERROR;
 }
 EXPORT_SYMBOL(lf_unregister_model);
-
-int 
-lf_activate_model(u8 appid, u32 model_uuid) 
-{
-    struct model_container *model, *swap_model;
-
-    if (appid > MAX_APP) {
-        printk(KERN_ERR "Unsupported appid: %u.\n", appid);
-        return LF_ERROR;
-    }
-        
-    write_lock(&lf_lock);
-    if (apps[appid].appid == APP_ID_UNUSE) {
-        printk(KERN_ERR "Need to register app before unregistering model.\n");
-        goto error;
-    }
-
-    model = apps[appid].backup_model;
-
-    if (model == NULL) {
-        printk(KERN_ERR "No backup model to activate.\n");
-        goto error;
-    } else if (model->uuid != model_uuid) {
-        printk(KERN_ERR "First register the model with uuid: %u, then activate it.\n", model_uuid);
-        goto error;
-    }
-    
-    printk(KERN_INFO "Activate model with uuid: %u.\n", model_uuid);
-    swap_model = apps[appid].active_model;
-    apps[appid].active_model = model;
-    apps[appid].backup_model = swap_model;
-
-    // TODO swap some meta info, such as average reward of previous active model. which can be 
-    // used as evidence to roll back model
-    
-    write_unlock(&lf_lock);
-
-    report_model_activation(appid, model_uuid); // Send netlink message to notify user space program
-
-    return LF_SUCCS;
-
-error:
-    write_unlock(&lf_lock);
-    return LF_ERROR;
-}
-EXPORT_SYMBOL(lf_activate_model);
 
 
 int 
@@ -245,12 +252,16 @@ lf_query_model(u8 appid, s64 *input, s64 *output) {
         write_unlock(&lf_lock);
         return LF_ERROR;
     }
-    
-    model_to_use = apps[appid].active_model;
+
+    if (apps[appid].active_model == 0) {
+        model_to_use = apps[appid].model_slot_0;
+    } else {
+        model_to_use = apps[appid].model_slot_1;
+    }
     read_unlock(&lf_lock);
 
     if (model_to_use == NULL) {
-        printk(KERN_ERR "No active model for app with appid: %u.\n", appid);
+        printk(KERN_ERR "No model for app with appid: %u.\n", appid);
         return LF_ERROR;
     }
 
@@ -260,33 +271,26 @@ lf_query_model(u8 appid, s64 *input, s64 *output) {
 }
 EXPORT_SYMBOL(lf_query_model);
 
-static struct lf_nl_ops default_nl_ops = {
-    .recv_activation_cb = lf_activate_model,
-};
-
 static int
 __init liteflow_module_init(void)
 {
     u8 appid;
-    int ret;
 
     printk(KERN_INFO "liteflow init...\n");
 
     for (appid = 1; appid <= MAX_APP; ++appid) {
         apps[appid].appid = APP_ID_UNUSE;
-        apps[appid].active_model = NULL;
-        apps[appid].backup_model = NULL;
+        apps[appid].model_slot_0 = NULL;
+        apps[appid].model_slot_1 = NULL;
+        apps[appid].active_model = 0;
     }
 
-    ret = start_nl(&default_nl_ops);
-
-    return ret;
+    return 0;
 }
 
 static void
 __exit liteflow_module_exit(void)
 {
-    stop_nl();
     printk(KERN_INFO "liteflow exit...\n");
 }
 

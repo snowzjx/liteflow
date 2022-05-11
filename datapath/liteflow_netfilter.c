@@ -15,7 +15,7 @@ hook_func_incoming(void *priv,
 		struct sk_buff *skb,
 		const struct nf_hook_state *state)
 {
-	int ret, should_drop;
+	int ret;
 	struct iphdr *ip_header;
 	struct tcphdr *tcp_header;
 	__be32 saddr, daddr;

@@ -40,8 +40,6 @@ int lf_register_model(u8 appid, struct model_container *);
 
 int lf_unregister_model(u8 appid, u32 model_uuid);
 
-int lf_activate_model(u8 appid, u32 model_uuid);
-
 int lf_query_model(u8 appid, s64 *input, s64 *output);
 
 /* --- for testing --- */
