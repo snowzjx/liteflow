@@ -1,0 +1,9 @@
+*.tflite
+*.c
+*.cmd
+*.o
+*.ko
+.cache.mk
+.tmp_versions/
+Module.symvers
+modules.order
