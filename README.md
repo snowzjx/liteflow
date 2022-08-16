@@ -118,7 +118,7 @@ The screen should print all training data. *Note: different kernel settings may 
 
 ```sh
 cd bin
-python3 /lf.py
+python3 lf.py
 ```
 
 You expect to see a demo output of how LiteFlow generates a snapshot, evaluates a new neural network with the existing snapshot and updates the snapshot. *Note: for compatibility issues, there are lots of places left blank in the userspace program of LiteFlow, users can fill in the blanks with their own needs...*
