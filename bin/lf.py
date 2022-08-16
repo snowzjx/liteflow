@@ -127,7 +127,7 @@ def liteflow():
     uuid = uuid + 1
     current_installed_model = quant_model_output_path_real
 
-    schedule.every(10).seconds.do(_liteflow_step)
+    schedule.every(1).minutes.do(_liteflow_step)
 
     while True:
         schedule.run_pending()

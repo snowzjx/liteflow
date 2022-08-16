@@ -75,15 +75,6 @@ cd script
 
 This command tries to generate 3 Aurora snapshots from the model in ```liteflow/data/```. You can verify if the command is successful by checking if *lf_model_1.ko*, *lf_model_2.ko*, and *lf_model_3.ko* are generated. You can also check the generated source code by looking into *lf_model_1.c*, *lf_model_2.c*, and *lf_model_3.ko* files. Note here, we generate 3 identical snapshots just for demo purposes.
 
-#### Batched Training Data Delivery
-
-```sh
-cd script
-./fetch_data_from_kernel.sh
-```
-
-You expect 
-
 #### Snapshot Update
 
 ```sh
@@ -114,7 +105,23 @@ You expect a *dmesg* output showing that LiteFlow uses different neural networks
 ...
 ```
 
-#### LiteFlow Userspace Demo  
+#### Batched Training Data Delivery
+
+```sh
+cd script
+./fetch_data_from_kernel.sh
+```
+
+The screen should print all training data. *Note: different kernel settings may cause different outputs, please change the code accordingly.*
+
+#### LiteFlow Userspace Demo
+
+```sh
+cd bin
+python3 /lf.py
+```
+
+You expect to see a demo output of how LiteFlow generates a snapshot, evaluates a new neural network with the existing snapshot and updates the snapshot. *Note: for compatibility issues, there are lots of places left blank in the userspace program of LiteFlow, users can fill in the blanks with their own needs...*
 
 ## Citation
 
